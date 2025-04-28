@@ -1,6 +1,8 @@
+"use client"
 import Link from "next/link"
 import Image from "next/image"
 import { Facebook, Instagram, Twitter, Youtube, MapPin, Phone, Mail } from "lucide-react"
+import { useState, useEffect } from "react";
 
 export default function Footer() {
   return (
@@ -121,10 +123,11 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-600 text-sm mb-4 md:mb-0">
-            &copy; {new Date().getFullYear()} Maroon Fashion. All rights reserved.
-          </p>
+        <div className="border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">          
+            <Copyright/>
+
+
+          
           <div className="flex gap-4">
             <img src="/placeholder.svg?height=30&width=50" alt="Visa" className="h-6" />
             <img src="/placeholder.svg?height=30&width=50" alt="Mastercard" className="h-6" />
@@ -136,3 +139,16 @@ export default function Footer() {
     </footer>
   )
 }
+
+function Copyright() {
+    const [year, setYear] = useState(new Date().getFullYear());
+  
+    useEffect(() => {
+      setYear(new Date().getFullYear());
+    }, []);
+    return (
+      <p className="text-gray-600 text-sm mb-4 md:mb-0">
+        &copy; {year} Maroon Fashion. All rights reserved.
+      </p>
+    );
+  }

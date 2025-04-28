@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
-import ProductsGrid from "@/components/products-grid"
 import ProductsFilter from "@/components/products-filter"
+import AllProducts from "@/components/all-products";
 import ProductsSort from "@/components/products-sort"
 import { Button } from "@/components/ui/button"
 import { Filter } from "lucide-react"
@@ -40,28 +40,7 @@ export default function ProductsPage() {
               <ProductsSort />
             </div>
 
-            <ProductsGrid />
-
-            {/* Pagination */}
-            <div className="mt-12 flex justify-center">
-              <nav className="flex items-center gap-1">
-                <Button variant="outline" size="icon" disabled>
-                  &lt;
-                </Button>
-                <Button variant="outline" size="icon" className="bg-gray-100">
-                  1
-                </Button>
-                <Button variant="outline" size="icon">
-                  2
-                </Button>
-                <Button variant="outline" size="icon">
-                  3
-                </Button>
-                <Button variant="outline" size="icon">
-                  &gt;
-                </Button>
-              </nav>
-            </div>
+            <AllProducts />
           </div>
         </div>
       </div>

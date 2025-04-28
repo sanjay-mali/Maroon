@@ -32,10 +32,6 @@ export default function ProductsFilter() {
                 <Checkbox id="category-gowns" />
                 <Label htmlFor="category-gowns">Gowns</Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="category-accessories" />
-                <Label htmlFor="category-accessories">Accessories</Label>
-              </div>
             </div>
           </AccordionContent>
         </AccordionItem>

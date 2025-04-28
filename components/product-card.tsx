@@ -1,41 +1,36 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
+import { addToWishlist, removeFromWishlist } from "@/lib/appwrite"
 import Image from "next/image"
 import { Heart, ShoppingBag, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { motion } from "framer-motion"
 
+
 interface ProductCardProps {
-  id: string
+  $id: string
   name: string
   price: number
   originalPrice?: number
-  image: string
+  images: string[]
   rating: number
   reviewCount: number
   isNew?: boolean
   isBestSeller?: boolean
 }
 
-export default function ProductCard({
-  id = "1",
-  name = "Embroidered Silk Saree",
-  price = 4999,
-  originalPrice = 6999,
-  image = "/placeholder.svg?height=600&width=400",
-  rating = 4.5,
-  reviewCount = 24,
-  isNew = false,
-  isBestSeller = false,
-}: ProductCardProps) {
+export default function ProductCard({ $id, name, price, originalPrice, images, rating, reviewCount, isNew, isBestSeller,}: ProductCardProps) {
+  const [isInWishlist, setIsInWishlist] = useState<boolean>(false)
   const [isHovered, setIsHovered] = useState(false)
   const { toast } = useToast()
+  const userId = 'user-test'
 
+
+  
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -45,13 +40,28 @@ export default function ProductCard({
     })
   }
 
-  const handleAddToWishlist = (e: React.MouseEvent) => {
+  const handleAddToWishlist = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    toast({
-      title: "Added to wishlist",
-      description: `${name} has been added to your wishlist.`,
-    })
+    if(isInWishlist){
+      const remove = await removeFromWishlist(userId, $id)
+      if(remove){
+        setIsInWishlist(false)
+        toast({
+          title: "Removed from wishlist",
+          description: `${name} has been removed from your wishlist.`,
+        })
+      }
+    }else{
+      const add = await addToWishlist(userId, $id)
+      if(add){
+        setIsInWishlist(true)
+        toast({
+          title: "Added to wishlist",
+          description: `${name} has been added to your wishlist.`,
+        })
+      }
+    }
   }
 
   const formattedPrice = new Intl.NumberFormat("en-IN", {
@@ -67,18 +77,22 @@ export default function ProductCard({
         maximumFractionDigits: 0,
       }).format(originalPrice)
     : null
+  
+    useEffect(() => {
+      //Check if the product is in the wishlist
+    }, [isInWishlist]);
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-      <Link href={`/products/${id}`} scroll={false}>
+      <Link href={`/products/${$id}`} scroll={false}>
         <div
           className="product-card group"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <div className="relative aspect-[3/4] overflow-hidden">
+            <div className="relative aspect-[3/4] overflow-hidden">
             <Image
-              src={image || "/placeholder.svg"}
+            src={images && images.length > 0 ? images[0] : "/placeholder.svg"}
               alt={name}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -99,7 +113,7 @@ export default function ProductCard({
               </motion.div>
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
                 <Button size="icon" variant="secondary" className="rounded-full" onClick={handleAddToWishlist}>
-                  <Heart className="h-4 w-4" />
+                  <Heart className={`h-4 w-4 ${isInWishlist ? 'fill-red-500 text-red-500' : ''}`} />
                   <span className="sr-only">Add to wishlist</span>
                 </Button>
               </motion.div>

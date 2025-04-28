@@ -50,9 +50,6 @@ export default function Navbar() {
                 <Link href="/kurtis" className="text-lg font-medium hover:text-primary transition-colors">
                   Kurtis
                 </Link>
-                <Link href="/accessories" className="text-lg font-medium hover:text-primary transition-colors">
-                  Accessories
-                </Link>
                 <Link href="/sale" className="text-lg font-medium text-red-600 hover:text-red-700 transition-colors">
                   Sale
                 </Link>

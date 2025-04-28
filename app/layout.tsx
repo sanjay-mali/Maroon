@@ -6,6 +6,7 @@ import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider"
+import { cookies } from 'next/headers';
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -53,7 +54,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return (
+  return (  
     <html lang="en">
       <body className={`${playfair.variable} ${poppins.variable} font-poppins`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
