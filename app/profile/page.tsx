@@ -1,10 +1,22 @@
+p"use client"
+
 import Image from "next/image"
 import { Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import ProfileSidebar from "@/components/profile-sidebar"
 import Footer from "@/components/footer"
+import { logout } from "@/lib/appwrite"
+import { useRouter } from "next/navigation"
 
 export default function ProfilePage() {
+  const router = useRouter();
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      console.error(error)
+    }
+  }
   return (
     <main className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8 md:px-8">
@@ -18,6 +30,9 @@ export default function ProfilePage() {
 
           {/* Main Content */}
           <div className="md:col-span-3">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold">Profile Page</h1>
+              <Button onClick={handleLogout} variant="destructive">Logout</Button>
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center mb-8">
                 <div className="relative">
@@ -79,6 +94,7 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </div>
