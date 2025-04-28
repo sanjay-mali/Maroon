@@ -1,29 +1,29 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Playfair_Display, Poppins } from "next/font/google"
-import "./globals.css"
-import Navbar from "@/components/navbar"
-import Footer from "@/components/footer"
-import { Toaster } from "@/components/ui/toaster"
-import { ThemeProvider } from "@/components/theme-provider"
-import { cookies } from 'next/headers';
+import type React from "react";
+import type { Metadata } from "next";
+import { Playfair_Display, Poppins } from "next/font/google";
+import "./globals.css";
+import Navbar from "@/components/navbar";
+import Footer from "@/components/footer";
+import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
-})
+});
 
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
   variable: "--font-poppins",
-})
+});
 
 export const metadata: Metadata = {
   title: "Maroon - Love for Fashion | Premium Indian Ethnic Wear",
   description:
     "Discover exquisite collection of premium ethnic wear including sarees, lehengas, and more. Shop the latest fashion trends with Maroon.",
-  keywords: "ethnic wear, sarees, lehengas, indian fashion, traditional wear, maroon fashion",
+  keywords:
+    "ethnic wear, sarees, lehengas, indian fashion, traditional wear, maroon fashion",
   openGraph: {
     title: "Maroon - Love for Fashion | Premium Indian Ethnic Wear",
     description:
@@ -46,18 +46,23 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-    generator: 'v0.dev'
-}
+  generator: "v0.dev",
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
-  return (  
+  return (
     <html lang="en">
       <body className={`${playfair.variable} ${poppins.variable} font-poppins`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
           <Navbar />
           <main>{children}</main>
           <Footer />
@@ -65,5 +70,5 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }

@@ -1,7 +1,15 @@
-"use client"
-import Link from "next/link"
-import Image from "next/image"
-import { Facebook, Instagram, Twitter, Youtube, MapPin, Phone, Mail } from "lucide-react"
+"use client";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  Facebook,
+  Instagram,
+  Twitter,
+  Youtube,
+  MapPin,
+  Phone,
+  Mail,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function Footer() {
@@ -20,19 +28,36 @@ export default function Footer() {
               />
             </Link>
             <p className="text-gray-600 mb-4">
-              Discover exquisite ethnic wear for every occasion. Premium quality, timeless designs.
+              Discover exquisite ethnic wear for every occasion. Premium
+              quality, timeless designs.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-gray-600 hover:text-primary" aria-label="Facebook">
+              <a
+                href="#"
+                className="text-gray-600 hover:text-primary"
+                aria-label="Facebook"
+              >
                 <Facebook size={20} />
               </a>
-              <a href="#" className="text-gray-600 hover:text-primary" aria-label="Instagram">
+              <a
+                href="#"
+                className="text-gray-600 hover:text-primary"
+                aria-label="Instagram"
+              >
                 <Instagram size={20} />
               </a>
-              <a href="#" className="text-gray-600 hover:text-primary" aria-label="Twitter">
+              <a
+                href="#"
+                className="text-gray-600 hover:text-primary"
+                aria-label="Twitter"
+              >
                 <Twitter size={20} />
               </a>
-              <a href="#" className="text-gray-600 hover:text-primary" aria-label="Youtube">
+              <a
+                href="#"
+                className="text-gray-600 hover:text-primary"
+                aria-label="Youtube"
+              >
                 <Youtube size={20} />
               </a>
             </div>
@@ -42,12 +67,18 @@ export default function Footer() {
             <h3 className="font-bold text-lg mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/about" className="text-gray-600 hover:text-primary">
+                <Link
+                  href="/about"
+                  className="text-gray-600 hover:text-primary"
+                >
                   About Us
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-600 hover:text-primary">
+                <Link
+                  href="/contact"
+                  className="text-gray-600 hover:text-primary"
+                >
                   Contact Us
                 </Link>
               </li>
@@ -62,7 +93,10 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/careers" className="text-gray-600 hover:text-primary">
+                <Link
+                  href="/careers"
+                  className="text-gray-600 hover:text-primary"
+                >
                   Careers
                 </Link>
               </li>
@@ -73,27 +107,42 @@ export default function Footer() {
             <h3 className="font-bold text-lg mb-4">Customer Service</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/shipping" className="text-gray-600 hover:text-primary">
+                <Link
+                  href="/shipping"
+                  className="text-gray-600 hover:text-primary"
+                >
                   Shipping Policy
                 </Link>
               </li>
               <li>
-                <Link href="/returns" className="text-gray-600 hover:text-primary">
+                <Link
+                  href="/returns"
+                  className="text-gray-600 hover:text-primary"
+                >
                   Returns & Exchanges
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="text-gray-600 hover:text-primary">
+                <Link
+                  href="/terms"
+                  className="text-gray-600 hover:text-primary"
+                >
                   Terms & Conditions
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="text-gray-600 hover:text-primary">
+                <Link
+                  href="/privacy"
+                  className="text-gray-600 hover:text-primary"
+                >
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/track-order" className="text-gray-600 hover:text-primary">
+                <Link
+                  href="/track-order"
+                  className="text-gray-600 hover:text-primary"
+                >
                   Track Your Order
                 </Link>
               </li>
@@ -105,17 +154,26 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start gap-2">
                 <MapPin className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <span className="text-gray-600">123 Fashion Street, Design District, Mumbai, Maharashtra 400001</span>
+                <span className="text-gray-600">
+                  123 Fashion Street, Design District, Mumbai, Maharashtra
+                  400001
+                </span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-5 w-5 text-primary flex-shrink-0" />
-                <a href="tel:+919876543210" className="text-gray-600 hover:text-primary">
+                <a
+                  href="tel:+919876543210"
+                  className="text-gray-600 hover:text-primary"
+                >
                   +91 98765 43210
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-5 w-5 text-primary flex-shrink-0" />
-                <a href="mailto:info@maroon.com" className="text-gray-600 hover:text-primary">
+                <a
+                  href="mailto:info@maroon.com"
+                  className="text-gray-600 hover:text-primary"
+                >
                   info@maroon.com
                 </a>
               </li>
@@ -123,32 +181,46 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">          
-            <Copyright/>
+        <div className="border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+          <Copyright />
 
-
-          
           <div className="flex gap-4">
-            <img src="/placeholder.svg?height=30&width=50" alt="Visa" className="h-6" />
-            <img src="/placeholder.svg?height=30&width=50" alt="Mastercard" className="h-6" />
-            <img src="/placeholder.svg?height=30&width=50" alt="PayPal" className="h-6" />
-            <img src="/placeholder.svg?height=30&width=50" alt="UPI" className="h-6" />
+            <img
+              src="/placeholder.svg?height=30&width=50"
+              alt="Visa"
+              className="h-6"
+            />
+            <img
+              src="/placeholder.svg?height=30&width=50"
+              alt="Mastercard"
+              className="h-6"
+            />
+            <img
+              src="/placeholder.svg?height=30&width=50"
+              alt="PayPal"
+              className="h-6"
+            />
+            <img
+              src="/placeholder.svg?height=30&width=50"
+              alt="UPI"
+              className="h-6"
+            />
           </div>
         </div>
       </div>
     </footer>
-  )
+  );
 }
 
 function Copyright() {
-    const [year, setYear] = useState(new Date().getFullYear());
-  
-    useEffect(() => {
-      setYear(new Date().getFullYear());
-    }, []);
-    return (
-      <p className="text-gray-600 text-sm mb-4 md:mb-0">
-        &copy; {year} Maroon Fashion. All rights reserved.
-      </p>
-    );
-  }
+  const [year, setYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+  return (
+    <p className="text-gray-600 text-sm mb-4 md:mb-0">
+      &copy; {year} Maroon Fashion. All rights reserved.
+    </p>
+  );
+}

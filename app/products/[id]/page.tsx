@@ -221,7 +221,6 @@ export default function ProductPage() {
           </>
         )}
       </div>
-      <Footer />
     </>
   )
 }

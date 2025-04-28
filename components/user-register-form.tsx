@@ -1,39 +1,46 @@
-'use client';
+"use client";
 
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { useToast } from './ui/use-toast';
-import { createUser } from '@/lib/appwrite';
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useToast } from "./ui/use-toast";
+import { createAccount } from "@/lib/appwrite";
 
 export default function UserRegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const router = useRouter();
   const { toast } = useToast();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
-      await createUser(email, password, name);
-      toast({ title: 'Success', description: 'User created successfully' });
-      router.push('/login');
-    } catch (error) {
-      toast({ variant: 'destructive', title: 'Error', description: error.message });
+      const res = await createAccount({ email, password, name });
+      console.log('res', res)
+        
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 mx-auto"
+      style={{ maxWidth: 480, minWidth: 340 }}
+    >
       <div>
         <Label htmlFor="name" className="block mb-1">
           Name
@@ -52,8 +59,8 @@ export default function UserRegisterForm() {
           Email
         </Label>
         <Input
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           type="email"
           id="email"
           className="w-full border border-gray-300 px-3 py-2 rounded-md"
@@ -65,8 +72,8 @@ export default function UserRegisterForm() {
           Password
         </Label>
         <Input
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           type="password"
           id="password"
           className="w-full border border-gray-300 px-3 py-2 rounded-md"
@@ -78,13 +85,14 @@ export default function UserRegisterForm() {
         className="w-full bg-primary text-primary-foreground px-3 py-2 rounded-md hover:bg-primary-light"
         disabled={isLoading}
       >
-        Register
+        {isLoading ? "Registering..." : "Register"}
       </button>
       <p className="text-center text-sm text-gray-500">
-        Already have an account?{' '}
+        Already have an account?{" "}
         <Link href="/login" className="text-primary hover:underline">
           Login
         </Link>
       </p>
     </form>
   );
+}

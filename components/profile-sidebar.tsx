@@ -1,8 +1,9 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { User, MapPin, Package, Heart, CreditCard, LogOut } from "lucide-react"
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { User, MapPin, Package, Heart, CreditCard, LogOut } from "lucide-react";
+import { Logout } from "@/lib/appwrite";
 
 const navItems = [
   {
@@ -30,17 +31,26 @@ const navItems = [
     label: "Payment Methods",
     icon: CreditCard,
   },
-]
+];
 
 export default function ProfileSidebar() {
-  const pathname = usePathname()
-
+  const pathname = usePathname();
+  const router = useRouter();
+  const handleLogout = async () => {
+    try {
+      await Logout();
+      localStorage.removeItem("cookieFallback");
+      router.push("/");
+    } catch (error) {
+      console.error(error);
+    }
+  };
   return (
     <div className="bg-white rounded-lg shadow-sm border p-4">
       <nav className="space-y-1">
         {navItems.map((item) => {
-          const isActive = pathname === item.href
-          const Icon = item.icon
+          const isActive = pathname === item.href;
+          const Icon = item.icon;
 
           return (
             <Link
@@ -55,16 +65,16 @@ export default function ProfileSidebar() {
               <Icon size={18} />
               <span>{item.label}</span>
             </Link>
-          )
+          );
         })}
 
         <div className="pt-4 mt-4 border-t">
           <button className="flex items-center gap-3 px-3 py-2 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full text-left">
             <LogOut size={18} />
-            <span>Logout</span>
+            <button onClick={handleLogout}>Logout</button>
           </button>
         </div>
       </nav>
     </div>
-  )
+  );
 }

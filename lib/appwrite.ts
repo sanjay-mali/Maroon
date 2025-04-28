@@ -22,8 +22,6 @@ export const usersCollectionId = "680f5ee500152b699ab8";
 export const ordersCollectionId = "680f5ef5001ce239d55d";
 export const storageId = "680f59ea002f06770208";
 
-
-
 // Auth Service
 export async function createAccount({
   email,
@@ -78,7 +76,8 @@ export async function getCurrentUser() {
   try {
     return await account.get();
   } catch (error: any) {
-    throw new Error(`Failed to get current user: ${error?.message}`);
+    console.warn("No current user found or session expired.");
+    return null;
   }
 }
 

@@ -1,16 +1,16 @@
-import type { Metadata } from "next"
-import ProductsFilter from "@/components/products-filter"
+import type { Metadata } from "next";
+import ProductsFilter from "@/components/products-filter";
 import AllProducts from "@/components/all-products";
-import ProductsSort from "@/components/products-sort"
-import { Button } from "@/components/ui/button"
-import { Filter } from "lucide-react"
-import Footer from "@/components/footer"
+import ProductsSort from "@/components/products-sort";
+import { Button } from "@/components/ui/button";
+import { Filter } from "lucide-react";
+import Footer from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "All Products | Maroon - Love for Fashion",
   description:
     "Browse our collection of premium ethnic wear including sarees, lehengas, kurtis and more. Find the perfect outfit for every occasion.",
-}
+};
 
 export default function ProductsPage() {
   return (
@@ -27,7 +27,10 @@ export default function ProductsPage() {
 
           {/* Mobile filter button */}
           <div className="md:hidden mb-4">
-            <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+            <Button
+              variant="outline"
+              className="w-full flex items-center justify-center gap-2"
+            >
               <Filter size={16} />
               <span>Filter Products</span>
             </Button>
@@ -44,7 +47,6 @@ export default function ProductsPage() {
           </div>
         </div>
       </div>
-      <Footer />
     </>
-  )
+  );
 }

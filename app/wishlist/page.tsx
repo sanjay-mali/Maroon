@@ -55,7 +55,6 @@ export default function WishlistPage() {
           </motion.div>
         )}
       </div>
-      <Footer />
     </motion.main>
   )
 }

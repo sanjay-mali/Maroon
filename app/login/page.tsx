@@ -1,9 +1,8 @@
-import UserLoginForm from "@/components/user-login-form"
-import Footer from "@/components/footer"
+import { UserLoginForm } from "@/components/user-login-form";
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen flex flex-col">
+    <main className="flex flex-col">
       <div className="container-custom py-8">
         <div className="flex-1 flex items-center justify-center px-4 py-12">
           <div className="w-full max-w-md">
@@ -14,7 +13,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-      <Footer />
     </main>
-  )
+  );
 }

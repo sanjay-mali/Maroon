@@ -88,7 +88,6 @@ export default function CartPage() {
           </motion.div>
         )}
       </div>
-      <Footer />
     </motion.main>
   )
 }

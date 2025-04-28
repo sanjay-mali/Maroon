@@ -63,7 +63,6 @@ export default function CheckoutSuccessPage() {
           </Button>
         </div>
       </div>
-      <Footer />
     </main>
   )
 }
