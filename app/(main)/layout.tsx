@@ -3,6 +3,7 @@
 import authService from "@/appwrite/authService";
 import { AuthProvider } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function Layout({
   children,
@@ -10,13 +11,22 @@ export default function Layout({
   children: React.ReactNode;
 }>) {
   const [authStatus, setAuthStatus] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
-    authService
-      .isLoggedIn()
-      .then(setAuthStatus)
-      .catch(() => setAuthStatus(false));
-  }, []);
+    const checkAuth = async () => {
+      try {
+        const status = await authService.isLoggedIn();
+        setAuthStatus(status);
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        setAuthStatus(false);
+      }
+    };
+    
+    checkAuth();
+    console.log('authStatus', authStatus); // Fixed typo
+  }, [pathname]); // Re-run when route changes
 
   return (
     <AuthProvider value={{ authStatus, setAuthStatus }}>
