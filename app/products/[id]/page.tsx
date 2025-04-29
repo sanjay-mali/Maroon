@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ProductReviews from "@/components/product-reviews"
 import SimilarProducts from "@/components/similar-products"
-import Footer from "@/components/footer"
 import ColorSelector from "@/components/color-selector"
 import SizeSelector from "@/components/size-selector"
 import QuantitySelector from "@/components/quantity-selector"
@@ -182,7 +181,6 @@ export default function ProductPage() {
           <SimilarProducts />
         </motion.div>
       </div>
-      <Footer />
     </>
   )
 }

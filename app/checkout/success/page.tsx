@@ -2,7 +2,6 @@ import Link from "next/link"
 import { CheckCircle, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import OrderSummary from "@/components/order-summary"
-import Footer from "@/components/footer"
 
 export default function CheckoutSuccessPage() {
   return (
@@ -63,7 +62,6 @@ export default function CheckoutSuccessPage() {
           </Button>
         </div>
       </div>
-      <Footer />
     </main>
   )
 }

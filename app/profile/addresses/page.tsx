@@ -2,7 +2,6 @@ import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import ProfileSidebar from "@/components/profile-sidebar"
 import AddressCard from "@/components/address-card"
-import Footer from "@/components/footer"
 
 export default function AddressesPage() {
   return (
@@ -52,7 +51,7 @@ export default function AddressesPage() {
           </div>
         </div>
       </div>
-      <Footer />
+      
     </main>
   )
 }

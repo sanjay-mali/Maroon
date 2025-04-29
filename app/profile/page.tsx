@@ -2,7 +2,6 @@ import Image from "next/image"
 import { Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import ProfileSidebar from "@/components/profile-sidebar"
-import Footer from "@/components/footer"
 
 export default function ProfilePage() {
   return (
@@ -82,7 +81,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-      <Footer />
     </main>
   )
 }

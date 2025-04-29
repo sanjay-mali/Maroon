@@ -1,30 +1,17 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getCurrentUser } from "@/lib/appwrite";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  const session = await getCurrentUser();
+const protectedRoutes = ["/profile", "/admin", "/cart"];
 
-  if (!session) {
-    const loginUrl = new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
+export function middleware(request: NextRequest) {
+  const isLoggedIn = request.cookies.get("a_session") !== undefined;
+  const isProtected = protectedRoutes.some((route) =>
+    request.nextUrl.pathname.startsWith(route)
+  );
+  
+  if (isProtected && !isLoggedIn) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
-
+  
+  console.log("Middleware is running...", isProtected);
   return NextResponse.next();
 }
-
-// Optionally, specify which paths to run middleware on
-export const config = {
-  matcher: [
-    /*
-      Match all routes except for:
-      - /login
-      - /register
-      - /api/*
-      - /_next/*
-      - /favicon.ico
-      - /public/*
-    */
-    "/((?!login|register|api|_next|favicon.ico|public).*)",
-  ],
-};

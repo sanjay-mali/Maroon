@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import WishlistItems from "@/components/wishlist-items"
 import EmptyWishlist from "@/components/empty-wishlist"
-import Footer from "@/components/footer"
 import SkeletonCartItem from "@/components/skeleton-cart-item"
 import { motion } from "framer-motion"
 
@@ -49,7 +48,6 @@ export default function WishlistPage() {
           </motion.div>
         )}
       </div>
-      <Footer />
     </motion.main>
   )
 }

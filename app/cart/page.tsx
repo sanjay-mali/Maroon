@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import CartItems from "@/components/cart-items"
 import CartSummary from "@/components/cart-summary"
 import EmptyCart from "@/components/empty-cart"
-import Footer from "@/components/footer"
 import SkeletonCartItem from "@/components/skeleton-cart-item"
 import { Skeleton } from "@/components/ui/skeleton"
 import { motion } from "framer-motion"
@@ -88,7 +87,6 @@ export default function CartPage() {
           </motion.div>
         )}
       </div>
-      <Footer />
     </motion.main>
   )
 }

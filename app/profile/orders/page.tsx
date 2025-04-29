@@ -1,6 +1,5 @@
 import ProfileSidebar from "@/components/profile-sidebar"
 import OrderCard from "@/components/order-card"
-import Footer from "@/components/footer"
 
 export default function OrdersPage() {
   return (
@@ -28,7 +27,6 @@ export default function OrdersPage() {
           </div>
         </div>
       </div>
-      <Footer />
     </main>
   )
 }

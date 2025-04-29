@@ -4,7 +4,6 @@ import ProductsFilter from "@/components/products-filter"
 import ProductsSort from "@/components/products-sort"
 import { Button } from "@/components/ui/button"
 import { Filter } from "lucide-react"
-import Footer from "@/components/footer"
 
 export const metadata: Metadata = {
   title: "Women's Western Wear Collection | Maroon Fashion",
@@ -65,7 +64,7 @@ export default function ProductsPage() {
           </div>
         </div>
       </div>
-      <Footer />
+      
     </>
   )
 }

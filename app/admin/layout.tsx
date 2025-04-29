@@ -6,7 +6,6 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
-import { signOut, useSession } from "next-auth/react"
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -36,18 +35,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const { toast } = useToast()
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
-  const { data: session, status } = useSession()
   const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
   }, [])
-
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/admin/login")
-    }
-  }, [status, router])
 
   const navItems = [
     { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -60,12 +52,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   ]
 
   const handleLogout = async () => {
-    await signOut({ redirect: false })
+    
     toast({
       title: "Logged out successfully",
       description: "You have been logged out of your account.",
     })
-    router.push("/admin/login")
+    router.push("/login")
   }
 
   if (status === "loading") {
@@ -79,7 +71,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     )
   }
 
-  if (status === "unauthenticated") return null
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>

@@ -1,5 +1,4 @@
 import { Client, Databases, Storage, Account, Query, ID } from "appwrite";
-import { redirect } from "next/navigation";
 
 const client = new Client();
 
@@ -10,13 +9,6 @@ client
 export const databases = new Databases(client);
 export const storage = new Storage(client);
 export const account = new Account(client);
-
-// Add Admin Client for SSR session validation
-const adminClient = new Client()
-  .setEndpoint("https://nyc.cloud.appwrite.io/v1")
-  .setProject("680f3962002aecf25632")
-
-export const adminAccount = new Account(adminClient);
 
 export { client };
 
@@ -65,9 +57,11 @@ export async function Login({
   password: string;
 }) {
   try {
+    // Create email/password session
     return await account.createEmailPasswordSession(email, password);
   } catch (error) {
-    console.log("Login error:", error);
+    console.error("Login error:", error);
+    throw error;
   }
 }
 
@@ -85,11 +79,7 @@ export async function getCurrentUser() {
     console.log("userrrrrrrrrrrrrrrrrr", user);
     return user;
   } catch (error: any) {
-    if (error.code === 401) {
-      console.warn("Session expired or no active session found.");
-    } else {
-      console.error("Error fetching current user:", error);
-    }
+    console.error("Error fetching current user:", error);
     return null;
   }
 }
@@ -169,7 +159,7 @@ export const getLowStockProducts = async (): Promise<any[]> => {
   }
 };
 
-export const getAllProducts = async (): Promise<any[]> => {
+export const getAllProducts = async (): Promise<any[] | any> => {
   try {
     const { documents } = await databases.listDocuments(
       databaseId,
@@ -182,7 +172,6 @@ export const getAllProducts = async (): Promise<any[]> => {
     }));
   } catch (error) {
     console.error("Error getting all products:", error);
-    return;
   }
 };
 
@@ -242,7 +231,7 @@ export const updateAdminPassword = async (password: string) => {
 export const deleteProduct = async (productId: string) => {
   try {
     await databases.deleteDocument(databaseId, productsCollectionId, productId);
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(error.message);
   }
 };
@@ -366,7 +355,7 @@ export const uploadImages = async (files: File[]) => {
         const previewUrl = storage.getFilePreview(
           storageId,
           storageResponse.$id
-        ).href;
+        );
         uploadedImages.push(previewUrl);
       } catch (error) {
         console.error("Error uploading image:", error);
@@ -585,7 +574,7 @@ export const getAddressById = async (
     );
     if (addresses.documents.length > 0) {
       const address = addresses.documents[0].addresses.find(
-        (address) => address.$id === addressId
+        (address: any) => address.$id === addressId
       );
       return address;
     }

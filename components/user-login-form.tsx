@@ -6,44 +6,22 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import Link from "next/link";
-import { useAuth } from "@/components/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 export function UserLoginForm() {
-  const { setUser } = useAuth();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (response.ok) {
-        // fetch current user and update context
-        const me = await fetch("/api/me").then((res) => res.json());
-        setUser(me.user);
-        toast({ title: "Success", description: "Logged in successfully!" });
-        router.push("/profile");
-      } else if (response.status === 429) {
-        toast({
-          title: "Error",
-          description: "Too many login attempts. Please try again later.",
-        });
-      } else {
-        const errorData = await response.json();
-        toast({ title: "Error", description: errorData.error });
-      }
+      const res = await login(email, password);
+      console.log('res', res)
     } catch (error) {
       toast({ title: "Error", description: "Something went wrong." });
     } finally {
