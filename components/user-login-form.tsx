@@ -6,22 +6,38 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
+import authService from "@/appwrite/authService";
 
 export function UserLoginForm() {
-  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
+  const { setAuthStatus } = useAuth();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsLoading(true);
 
     try {
-      const res = await login(email, password);
-      console.log('res', res)
+      const res = await authService.Login({
+        email,
+        password,
+      });
+      if (res) {
+        setAuthStatus(true);
+        toast({ title: "Success", description: "Logged in successfully." });
+        router.push("/");
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to log in.",
+        });
+      }
+      console.log("res", res);
     } catch (error) {
       toast({ title: "Error", description: "Something went wrong." });
     } finally {

@@ -7,6 +7,7 @@ import Footer from "@/components/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/context/AuthContext";
+import ProtectedLayout from "@/components/ProtectedLayout";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -58,12 +59,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${playfair.variable} ${poppins.variable} font-poppins`}>
-        <AuthProvider>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-          <Toaster />
-        </AuthProvider>
+        <Navbar />
+        <main>{children}</main>
+        <Footer />
+        <Toaster />
       </body>
     </html>
   );

@@ -503,16 +503,8 @@ export const getAllUsers = async () => {
 
 export const getUserById = async (userId: string) => {
   try {
-    const user = (await databases.getDocument(
-      databaseId,
-      usersCollectionId,
-      userId
-    )) as any;
-    return {
-      id: user.$id,
-      email: user.email,
-      ...user,
-    };
+    const user = await usersService.get(userId);
+    return { id: user.$id, email: user.email, ...user };
   } catch (error) {
     console.error("Error getting user by ID:", error);
     return null;
