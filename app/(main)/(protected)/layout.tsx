@@ -11,12 +11,12 @@ export default function ProtetedLayout({
 }>) {
   const router = useRouter();
   const { authStatus } = useAuth();
-
+  console.log("authStatus", authStatus);
   useEffect(() => {
     if (!authStatus) {
       router.replace("/login");
     }
-  }, [authStatus, router]);
+  }, [router]);
 
   if (!authStatus) {
     return null;

@@ -5,9 +5,6 @@ import "./globals.css";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/context/AuthContext";
-import ProtectedLayout from "@/components/ProtectedLayout";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
