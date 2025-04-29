@@ -52,6 +52,7 @@ export default function AddressesPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </main>
   )
 }

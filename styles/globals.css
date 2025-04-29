@@ -10,14 +10,6 @@ body {
   .text-balance {
     text-wrap: balance;
   }
-  .category-card{
-    @apply relative overflow-hidden rounded-lg transition-transform hover:scale-105 duration-300;
-  }
-
-  .product-card{
-    @apply
-    
-  }
 }
 
 @layer base {

@@ -1,41 +1,51 @@
 "use client";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
-import { Login } from "@/lib/appwrite";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import Link from "next/link";
+import { useAuth } from "@/components/AuthContext";
 
 export function UserLoginForm() {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { setUser } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsLoading(true);
+
     try {
-      const session = await Login({ email, password });
-      if (session) {
-        toast({
-          title: "Success",
-          description: "Logged in successfully!",
-        });
-        console.log("session", session);
-        router.push("/");
-      } else {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.ok) {
+        // fetch current user and update context
+        const me = await fetch("/api/me").then((res) => res.json());
+        setUser(me.user);
+        toast({ title: "Success", description: "Logged in successfully!" });
+        router.push("/profile");
+      } else if (response.status === 429) {
         toast({
           title: "Error",
-          description: "There was an error signing in.",
+          description: "Too many login attempts. Please try again later.",
         });
+      } else {
+        const errorData = await response.json();
+        toast({ title: "Error", description: errorData.error });
       }
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message });
-      console.log(error);
+    } catch (error) {
+      toast({ title: "Error", description: "Something went wrong." });
     } finally {
       setIsLoading(false);
     }

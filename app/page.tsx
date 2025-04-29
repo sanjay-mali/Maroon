@@ -8,9 +8,9 @@ import PromoBanner from "@/components/promo-banner"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Maroon - Love for Fashion | Premium Indian Ethnic Wear",
+  title: "Maroon - Buy Trendy Western Wear for Women Online",
   description:
-    "Discover exquisite collection of premium ethnic wear including sarees, lehengas, and more. Shop the latest fashion trends with Maroon.",
+    "Shop the latest collection of women's western wear including T-shirts, pants, skirts, and more. Premium quality, trendy designs.",
 }
 
 export default function Home() {
@@ -18,7 +18,7 @@ export default function Home() {
     <>
       {/* Announcement Bar */}
       <div className="announcement-bar">
-        <p>India's Biggest Festive Sale Live Now!</p>
+        <p>India's Biggest Women's Fashion Sale Live Now!</p>
       </div>
 
       {/* Hero Banner */}
@@ -32,8 +32,8 @@ export default function Home() {
       {/* Categories */}
       <section className="py-16">
         <div className="container-custom">
-          <h2 className="section-title">Top Categories</h2>
-          <p className="section-subtitle">Explore our curated collection of premium ethnic wear</p>
+          <h2 className="section-title">Shop By Category</h2>
+          <p className="section-subtitle">Explore our curated collection of premium women's western wear</p>
           <CategorySection />
         </div>
       </section>

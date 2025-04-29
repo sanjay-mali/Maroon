@@ -11,6 +11,13 @@ export const databases = new Databases(client);
 export const storage = new Storage(client);
 export const account = new Account(client);
 
+// Add Admin Client for SSR session validation
+const adminClient = new Client()
+  .setEndpoint("https://nyc.cloud.appwrite.io/v1")
+  .setProject("680f3962002aecf25632")
+
+export const adminAccount = new Account(adminClient);
+
 export { client };
 
 export const databaseId = "680f58ff0022c60de3f1";
@@ -60,7 +67,7 @@ export async function Login({
   try {
     return await account.createEmailPasswordSession(email, password);
   } catch (error) {
-    throw error;
+    console.log("Login error:", error);
   }
 }
 
@@ -74,9 +81,15 @@ export async function Logout() {
 
 export async function getCurrentUser() {
   try {
-    return await account.get();
+    const user = await account.get();
+    console.log("userrrrrrrrrrrrrrrrrr", user);
+    return user;
   } catch (error: any) {
-    console.warn("No current user found or session expired.");
+    if (error.code === 401) {
+      console.warn("Session expired or no active session found.");
+    } else {
+      console.error("Error fetching current user:", error);
+    }
     return null;
   }
 }

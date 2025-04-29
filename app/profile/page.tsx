@@ -1,7 +1,8 @@
-import Image from "next/image";
-import { Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import ProfileSidebar from "@/components/profile-sidebar";
+import Image from "next/image"
+import { Settings } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import ProfileSidebar from "@/components/profile-sidebar"
+import Footer from "@/components/footer"
 
 export default function ProfilePage() {
   return (
@@ -44,46 +45,32 @@ export default function ProfilePage() {
               </div>
 
               <div className="border-t pt-6">
-                <h3 className="font-semibold text-lg mb-4">
-                  Personal Information
-                </h3>
+                <h3 className="font-semibold text-lg mb-4">Personal Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
-                      Full Name
-                    </label>
+                    <label className="block text-sm text-gray-600 mb-1">Full Name</label>
                     <div className="font-medium">John Doe</div>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
-                      Email Address
-                    </label>
+                    <label className="block text-sm text-gray-600 mb-1">Email Address</label>
                     <div className="font-medium">john.doe@example.com</div>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
-                      Phone Number
-                    </label>
+                    <label className="block text-sm text-gray-600 mb-1">Phone Number</label>
                     <div className="font-medium">+1 (555) 123-4567</div>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
-                      Date of Birth
-                    </label>
+                    <label className="block text-sm text-gray-600 mb-1">Date of Birth</label>
                     <div className="font-medium">January 1, 1990</div>
                   </div>
                 </div>
               </div>
 
               <div className="border-t mt-6 pt-6">
-                <h3 className="font-semibold text-lg mb-4">
-                  Default Shipping Address
-                </h3>
+                <h3 className="font-semibold text-lg mb-4">Default Shipping Address</h3>
                 <div className="border rounded-lg p-4">
                   <div className="font-medium mb-1">John Doe</div>
-                  <div className="text-gray-600 mb-1">
-                    123 Main Street, Apt 4B
-                  </div>
+                  <div className="text-gray-600 mb-1">123 Main Street, Apt 4B</div>
                   <div className="text-gray-600 mb-1">New York, NY 10001</div>
                   <div className="text-gray-600">United States</div>
                   <Button variant="link" className="p-0 h-auto mt-2 text-sm">
@@ -95,6 +82,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+      <Footer />
     </main>
-  );
+  )
 }

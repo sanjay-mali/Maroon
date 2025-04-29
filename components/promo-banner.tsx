@@ -7,9 +7,10 @@ export default function PromoBanner() {
       <div className="container-custom">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-center md:text-left">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Festive Season Sale</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Summer Fashion Sale</h2>
             <p className="text-lg mb-6 max-w-xl">
-              Get up to 50% off on selected items. Limited time offer. Shop now and elevate your festive wardrobe.
+              Get up to 50% off on selected women's western wear. Limited time offer. Shop now and refresh your
+              wardrobe.
             </p>
             <Button asChild className="bg-white text-primary hover:bg-gray-100">
               <Link href="/sale">Shop Now</Link>

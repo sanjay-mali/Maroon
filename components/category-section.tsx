@@ -3,28 +3,28 @@ import Image from "next/image"
 
 const categories = [
   {
-    id: "sarees",
-    name: "Sarees",
+    id: "tops",
+    name: "Tops",
     image: "/placeholder.svg?height=600&width=400",
-    link: "/sarees",
+    link: "/products?category=tops",
   },
   {
-    id: "lehengas",
-    name: "Lehengas",
+    id: "dresses",
+    name: "Dresses",
     image: "/placeholder.svg?height=600&width=400",
-    link: "/lehengas",
+    link: "/products?category=dresses",
   },
   {
-    id: "kurtis",
-    name: "Kurtis",
+    id: "bottoms",
+    name: "Bottoms",
     image: "/placeholder.svg?height=600&width=400",
-    link: "/kurtis",
+    link: "/products?category=bottoms",
   },
   {
-    id: "accessories",
-    name: "Accessories",
+    id: "outerwear",
+    name: "Outerwear",
     image: "/placeholder.svg?height=600&width=400",
-    link: "/accessories",
+    link: "/products?category=outerwear",
   },
 ]
 

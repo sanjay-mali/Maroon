@@ -1,16 +1,16 @@
-import type { Metadata } from "next";
-import ProductsFilter from "@/components/products-filter";
-import AllProducts from "@/components/all-products";
-import ProductsSort from "@/components/products-sort";
-import { Button } from "@/components/ui/button";
-import { Filter } from "lucide-react";
-import Footer from "@/components/footer";
+import type { Metadata } from "next"
+import ProductsGrid from "@/components/products-grid"
+import ProductsFilter from "@/components/products-filter"
+import ProductsSort from "@/components/products-sort"
+import { Button } from "@/components/ui/button"
+import { Filter } from "lucide-react"
+import Footer from "@/components/footer"
 
 export const metadata: Metadata = {
-  title: "All Products | Maroon - Love for Fashion",
+  title: "Women's Western Wear Collection | Maroon Fashion",
   description:
-    "Browse our collection of premium ethnic wear including sarees, lehengas, kurtis and more. Find the perfect outfit for every occasion.",
-};
+    "Browse our collection of premium women's western wear including tops, dresses, bottoms and more. Find the perfect outfit for every occasion.",
+}
 
 export default function ProductsPage() {
   return (
@@ -27,10 +27,7 @@ export default function ProductsPage() {
 
           {/* Mobile filter button */}
           <div className="md:hidden mb-4">
-            <Button
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2"
-            >
+            <Button variant="outline" className="w-full flex items-center justify-center gap-2">
               <Filter size={16} />
               <span>Filter Products</span>
             </Button>
@@ -39,14 +36,36 @@ export default function ProductsPage() {
           {/* Products */}
           <div className="flex-1">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-              <h1 className="text-2xl md:text-3xl font-bold">All Products</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">Women's Western Wear</h1>
               <ProductsSort />
             </div>
 
-            <AllProducts />
+            <ProductsGrid />
+
+            {/* Pagination */}
+            <div className="mt-12 flex justify-center">
+              <nav className="flex items-center gap-1">
+                <Button variant="outline" size="icon" disabled>
+                  &lt;
+                </Button>
+                <Button variant="outline" size="icon" className="bg-gray-100">
+                  1
+                </Button>
+                <Button variant="outline" size="icon">
+                  2
+                </Button>
+                <Button variant="outline" size="icon">
+                  3
+                </Button>
+                <Button variant="outline" size="icon">
+                  &gt;
+                </Button>
+              </nav>
+            </div>
           </div>
         </div>
       </div>
+      <Footer />
     </>
-  );
+  )
 }

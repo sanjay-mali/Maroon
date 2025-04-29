@@ -41,14 +41,29 @@ export default function Navbar() {
                 <Link href="/" className="text-lg font-medium hover:text-primary transition-colors">
                   Home
                 </Link>
-                <Link href="/sarees" className="text-lg font-medium hover:text-primary transition-colors">
-                  Sarees
+                <Link
+                  href="/products?category=tops"
+                  className="text-lg font-medium hover:text-primary transition-colors"
+                >
+                  Tops
                 </Link>
-                <Link href="/lehengas" className="text-lg font-medium hover:text-primary transition-colors">
-                  Lehengas
+                <Link
+                  href="/products?category=dresses"
+                  className="text-lg font-medium hover:text-primary transition-colors"
+                >
+                  Dresses
                 </Link>
-                <Link href="/kurtis" className="text-lg font-medium hover:text-primary transition-colors">
-                  Kurtis
+                <Link
+                  href="/products?category=bottoms"
+                  className="text-lg font-medium hover:text-primary transition-colors"
+                >
+                  Bottoms
+                </Link>
+                <Link
+                  href="/products?category=outerwear"
+                  className="text-lg font-medium hover:text-primary transition-colors"
+                >
+                  Outerwear
                 </Link>
                 <Link href="/sale" className="text-lg font-medium text-red-600 hover:text-red-700 transition-colors">
                   Sale
@@ -82,17 +97,26 @@ export default function Navbar() {
             <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">
               Home
             </Link>
-            <Link href="/sarees" className="text-sm font-medium hover:text-primary transition-colors">
-              Sarees
+            <Link href="/products?category=tops" className="text-sm font-medium hover:text-primary transition-colors">
+              Tops
             </Link>
-            <Link href="/lehengas" className="text-sm font-medium hover:text-primary transition-colors">
-              Lehengas
+            <Link
+              href="/products?category=dresses"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
+              Dresses
             </Link>
-            <Link href="/kurtis" className="text-sm font-medium hover:text-primary transition-colors">
-              Kurtis
+            <Link
+              href="/products?category=bottoms"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
+              Bottoms
             </Link>
-            <Link href="/accessories" className="text-sm font-medium hover:text-primary transition-colors">
-              Accessories
+            <Link
+              href="/products?category=outerwear"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
+              Outerwear
             </Link>
             <Link href="/sale" className="text-sm font-medium text-red-600 hover:text-red-700 transition-colors">
               Sale
