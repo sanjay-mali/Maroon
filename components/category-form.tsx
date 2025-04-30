@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Upload } from "lucide-react";
@@ -19,10 +20,9 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   initialName = "",
   isEdit = false,
 }) => {
-  const [title, setTitle] = useState<string>(initialName);
+  const [name, setName] = useState<string>(initialName);
   const [description, setDescription] = useState<string>("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [existingImageId, setExistingImageId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,12 +38,8 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           const categoryData = await dbService.getCategoryById(id);
 
           if (categoryData) {
-            setTitle(categoryData.title || categoryData.name || "");
+            setName(categoryData.name || "");
             setDescription(categoryData.description || "");
-
-            if (categoryData.imageUrl) {
-              setPreviewUrl(categoryData.imageUrl);
-            }
 
             if (categoryData.imageId) {
               setExistingImageId(categoryData.imageId);
@@ -69,7 +65,6 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
       setSelectedImage(file);
-      setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
@@ -80,7 +75,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!title.trim()) {
+    if (!name.trim()) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -95,25 +90,13 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
 
       // Upload new image if selected
       if (selectedImage) {
-        const uploadResult = await dbService.uploadImage(selectedImage);
-        if (uploadResult) {
-          // If we had an existing image and are replacing it, delete the old one
-          if (existingImageId) {
-            try {
-              await dbService.deleteImage(existingImageId);
-            } catch (error) {
-              console.error("Error deleting old image:", error);
-              // Continue anyway - the new image was uploaded
-            }
-          }
-          imageId = uploadResult.fileId;
-        }
+        imageId = await dbService.uploadImage(selectedImage);
       }
 
       if (isEdit && id) {
         const result = await dbService.updateCategory(
           id,
-          title,
+          name,
           description,
           imageId
         );
@@ -127,11 +110,11 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           throw new Error("Failed to update category");
         }
       } else {
-        const result = await dbService.addNewCategory(
-          title,
+        const result = await dbService.addNewCategory({
+          name,
           description,
-          imageId
-        );
+          imageId,
+        });
         if (result) {
           toast({
             title: "Success",
@@ -176,8 +159,8 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         <Input
           id="title"
           type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           required
           placeholder="Category name"
           className="mt-1"
@@ -210,24 +193,12 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             onChange={handleFileChange}
           />
 
-          {previewUrl ? (
-            <div className="mx-auto w-32 h-32 rounded-md overflow-hidden mb-4">
-              <img
-                src={previewUrl}
-                alt="Category Preview"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-              <Upload className="h-6 w-6 text-gray-400" />
-            </div>
-          )}
+          <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+            <Upload className="h-6 w-6 text-gray-400" />
+          </div>
 
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {previewUrl
-              ? "Click to change image"
-              : "Click to upload or drag and drop"}
+            Click to upload or drag and drop
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             SVG, PNG, JPG or GIF (max. 2MB)

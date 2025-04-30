@@ -112,6 +112,8 @@ export default function CategoriesPage() {
   };
 
   const handleAddCategory = async () => {
+    console.log("newCategory", newCategory);
+
     try {
       if (!newCategory.name.trim()) {
         toast({
@@ -133,12 +135,11 @@ export default function CategoriesPage() {
       }
 
       // Create the new category with the image ID
-      const result = await dbService.addNewCategory(
-        newCategory.name,
-        newCategory.description,
-        imageId
-      );
-
+      const result = await dbService.addNewCategory({
+        name: newCategory.name,
+        description: newCategory.description,
+        imageId: imageId,
+      });
       if (result) {
         // Refresh the categories list
         const updatedResult = await dbService.getAllCategories(

@@ -201,7 +201,7 @@ export class DBService {
       const result = await this.database.listDocuments(
         this.databaseId,
         this.productsCollectionId,
-        [Query.search("categories", categoryId)]
+        [Query.equal("categories", categoryId)]
       );
       return result.total;
     } catch (error) {
@@ -215,20 +215,25 @@ export class DBService {
 
   // Categories
 
-  async addNewCategory(
-    name: string,
-    description: string = "",
-    imageId: string = ""
-  ) {
+  async addNewCategory({
+    name,
+    description = "",
+    imageId = "",
+  }: {
+    name: string;
+    description: string;
+    imageId?: string;
+  }) {
     try {
-      // The issue is likely that the database expects different field names
-      // Let's try with a more standard approach using title instead of name
       const data: any = {
-        title: name, // Using 'title' instead of 'name'
-        description,
+        name: name,
+        description: description,
       };
 
-      // Only add image if provided
+      if (description) {
+        data.description = description;
+      }
+
       if (imageId) {
         data.imageId = imageId;
       }
@@ -271,7 +276,7 @@ export class DBService {
 
           return {
             id: category.$id,
-            name: category.title || category.name, // Try both field names
+            name: category.name, // Try both field names
             description: category.description || "",
             productCount,
             imageUrl,
@@ -313,7 +318,7 @@ export class DBService {
 
       return {
         id: category.$id,
-        name: category.title || category.name, // Try both field names
+        name: category.name, // Try both field names
         description: category.description || "",
         productCount,
         imageUrl,
@@ -334,10 +339,7 @@ export class DBService {
   ) {
     try {
       // Use title instead of name to match the database schema
-      const data: any = {
-        title: name, // Using 'title' instead of 'name'
-        description,
-      };
+      const data: any = { name: name, description };
 
       // Only update image if provided
       if (imageId !== undefined) {
@@ -369,22 +371,31 @@ export class DBService {
     }
   }
 
-  // Upload image to storage
-  async uploadImage(file: File) {
+  // Upload image to storage and return preview URL only
+  async uploadImage(file: File): Promise<string> {
     try {
       const response = await this.storage.createFile(
         this.storageId,
         ID.unique(),
         file
       );
-
-      // Return both the file ID and the preview URL
-      return {
-        fileId: response.$id,
-        previewUrl: this.storage.getFilePreview(this.storageId, response.$id),
-      };
+      return this.storage.getFilePreview(this.storageId, response.$id);
     } catch (error) {
       console.error("Error uploading image:", error);
+      throw error;
+    }
+  }
+
+  async uploadImages(files: File[]): Promise<string[]> {
+    try {
+      const results: string[] = [];
+      for (const file of files) {
+        const url = await this.uploadImage(file);
+        results.push(url);
+      }
+      return results;
+    } catch (error) {
+      console.error("Error uploading multiple images:", error);
       throw error;
     }
   }
@@ -403,24 +414,6 @@ export class DBService {
       return this.storage.getFilePreview(this.storageId, fileId);
     } catch (error) {
       console.error("Error getting image:", error);
-      throw error;
-    }
-  }
-
-  // Upload multiple images and return array of preview URLs
-  async uploadImages(files: File[]) {
-    try {
-      const results = [];
-      for (const file of files) {
-        const upload = await this.uploadImage(file);
-        results.push({
-          fileId: upload.fileId,
-          previewUrl: upload.previewUrl,
-        });
-      }
-      return results;
-    } catch (error) {
-      console.error("Error uploading multiple images:", error);
       throw error;
     }
   }

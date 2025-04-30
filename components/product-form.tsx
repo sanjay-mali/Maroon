@@ -174,16 +174,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ isEdit }) => {
     
     try {
       let uploadedImageUrls: string[] = [];
-      
-      // Upload new images if any
       if (files.length > 0) {
-        const uploadResults = await dbService.uploadImages(files);
-        if (uploadResults) {
-          uploadedImageUrls = uploadResults.map(result => result.previewUrl);
-        }
+        uploadedImageUrls = await dbService.uploadImages(files);
       }
-      
-      // Combine existing images with newly uploaded ones
       const allImages = [...existingImages, ...uploadedImageUrls];
       
       const productData: Product = {
@@ -194,7 +187,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isEdit }) => {
         sizes,
         colors,
         categories: selectedCategories,
-        images: allImages,
+        images: allImages, // store URLs directly
         is_published: isPublished,
         is_draft: isDraft,
         is_featured: isFeatured,
