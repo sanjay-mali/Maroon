@@ -1,11 +1,29 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Plus, Search, ArrowUpDown, MoreHorizontal, Edit, Trash2, Eye, CheckCircle, XCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import {
+  Plus,
+  Search,
+  ArrowUpDown,
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Eye,
+  CheckCircle,
+  XCircle,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,125 +31,162 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { useToast } from "@/components/ui/use-toast"
-
-// Dummy data for products
-const products = [
-  {
-    id: "1",
-    name: "Floral Print Maxi Dress",
-    category: "Dresses",
-    price: 2999,
-    stock: 25,
-    status: "active",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "2",
-    name: "High-Waisted Skinny Jeans",
-    category: "Bottoms",
-    price: 1999,
-    stock: 42,
-    status: "active",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "3",
-    name: "Oversized Boyfriend Shirt",
-    category: "Tops",
-    price: 1499,
-    stock: 18,
-    status: "active",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "4",
-    name: "Faux Leather Jacket",
-    category: "Outerwear",
-    price: 3499,
-    stock: 10,
-    status: "active",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "5",
-    name: "Ribbed Crop Top",
-    category: "Tops",
-    price: 899,
-    stock: 35,
-    status: "active",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "6",
-    name: "Pleated Mini Skirt",
-    category: "Bottoms",
-    price: 1299,
-    stock: 22,
-    status: "active",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "7",
-    name: "Wrap Midi Dress",
-    category: "Dresses",
-    price: 2499,
-    stock: 15,
-    status: "active",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "8",
-    name: "Straight Leg Trousers",
-    category: "Bottoms",
-    price: 1799,
-    stock: 28,
-    status: "active",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "9",
-    name: "Puff Sleeve Blouse",
-    category: "Tops",
-    price: 1299,
-    stock: 0,
-    status: "out_of_stock",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "10",
-    name: "Wide Leg Jeans",
-    category: "Bottoms",
-    price: 1899,
-    stock: 0,
-    status: "out_of_stock",
-    image: "/placeholder.svg?height=40&width=40",
-  },
-]
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/use-toast";
+import dbService from "@/appwrite/database";
 
 export default function ProductsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const { toast } = useToast()
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [total, setTotal] = useState(0);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+
+        // Get products with pagination
+        const productsResult = await dbService.getAllProducts(
+          currentPage,
+          itemsPerPage
+        );
+        if (productsResult) {
+          // Map products to the expected format
+          const formattedProducts = productsResult.documents.map(
+            (product: any) => ({
+              id: product.$id,
+              name: product.name,
+              description: product.description,
+              categories: product.categories || [],
+              price: product.price,
+              stock: product.stock || 0,
+              images: product.images || [],
+              ...product,
+            })
+          );
+
+          setProducts(formattedProducts);
+          setTotal(productsResult.total);
+        }
+
+        // Get all categories
+        const categoriesResult = await dbService.getAllCategories(1, 100); // Get up to 100 categories
+        if (categoriesResult) {
+          setCategories(categoriesResult.documents);
+        }
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load products. Please try again later.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [toast, currentPage, itemsPerPage]);
 
   // Filter products based on search query and filters
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = categoryFilter === "all" || product.category === categoryFilter
-    const matchesStatus = statusFilter === "all" || product.status === statusFilter
-    return matchesSearch && matchesCategory && matchesStatus
-  })
+    const matchesSearch = product.name
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase());
 
-  const handleDeleteProduct = (id: string) => {
-    toast({
-      title: "Product deleted",
-      description: "The product has been deleted successfully.",
-    })
+    // Check if product has categories array and if any category matches the filter
+    const matchesCategory =
+      categoryFilter === "all" ||
+      (product.categories && product.categories.includes(categoryFilter));
+
+    // Determine status based on stock
+    const productStatus = product.stock > 0 ? "active" : "out_of_stock";
+    const matchesStatus =
+      statusFilter === "all" || productStatus === statusFilter;
+
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      const result = await dbService.deleteProduct(id);
+      if (result) {
+        setProducts(products.filter((product) => product.id !== id));
+
+        toast({
+          title: "Product deleted",
+          description: "The product has been deleted successfully.",
+        });
+
+        // If we've deleted the last item on this page, go to the previous page (unless we're on page 1)
+        if (filteredProducts.length === 1 && currentPage > 1) {
+          setCurrentPage(currentPage - 1);
+        }
+      } else {
+        throw new Error("Failed to delete product");
+      }
+    } catch (error) {
+      console.error("Failed to delete product:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete product. Please try again later.",
+      });
+    }
+  };
+
+  const getProductImageUrl = (product: any) => {
+    if (product.images && product.images.length > 0) {
+      return product.images[0];
+    }
+    return "/placeholder.svg?height=40&width=40";
+  };
+
+  const getCategoryName = (categoryId: string) => {
+    const category = categories.find((cat) => cat.id === categoryId);
+    return category ? category.name : "Uncategorized";
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  // Calculate total number of pages
+  const totalPages = Math.ceil(total / itemsPerPage);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>Loading products...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -149,7 +204,9 @@ export default function ProductsPage() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle>Product Management</CardTitle>
-          <CardDescription>Manage your product inventory, prices, and availability.</CardDescription>
+          <CardDescription>
+            Manage your product inventory, prices, and availability.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -170,10 +227,11 @@ export default function ProductsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="Tops">Tops</SelectItem>
-                  <SelectItem value="Bottoms">Bottoms</SelectItem>
-                  <SelectItem value="Dresses">Dresses</SelectItem>
-                  <SelectItem value="Outerwear">Outerwear</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -214,7 +272,10 @@ export default function ProductsPage() {
               <TableBody>
                 {filteredProducts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <TableCell
+                      colSpan={6}
+                      className="text-center py-8 text-gray-500 dark:text-gray-400"
+                    >
                       No products found. Try adjusting your search or filters.
                     </TableCell>
                   </TableRow>
@@ -225,7 +286,7 @@ export default function ProductsPage() {
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800">
                             <img
-                              src={product.image || "/placeholder.svg"}
+                              src={getProductImageUrl(product)}
                               alt={product.name}
                               className="w-full h-full object-cover"
                             />
@@ -233,17 +294,29 @@ export default function ProductsPage() {
                           <div className="font-medium">{product.name}</div>
                         </div>
                       </TableCell>
-                      <TableCell>{product.category}</TableCell>
-                      <TableCell>₹{product.price.toLocaleString()}</TableCell>
-                      <TableCell>{product.stock}</TableCell>
                       <TableCell>
-                        {product.status === "active" ? (
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        {product.categories && product.categories.length > 0
+                          ? getCategoryName(product.categories[0])
+                          : "Uncategorized"}
+                      </TableCell>
+                      <TableCell>
+                        ₹{product.price?.toLocaleString() || 0}
+                      </TableCell>
+                      <TableCell>{product.stock || 0}</TableCell>
+                      <TableCell>
+                        {product.stock > 0 ? (
+                          <Badge
+                            variant="outline"
+                            className="bg-green-50 text-green-700 border-green-200"
+                          >
                             <CheckCircle className="h-3.5 w-3.5 mr-1" />
                             In Stock
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                          <Badge
+                            variant="outline"
+                            className="bg-red-50 text-red-700 border-red-200"
+                          >
                             <XCircle className="h-3.5 w-3.5 mr-1" />
                             Out of Stock
                           </Badge>
@@ -260,13 +333,7 @@ export default function ProductsPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuItem asChild>
-                              <Link href={`/admin/products/${product.id}`}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                View
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/admin/products/${product.id}/edit`}>
+                              <Link href={`/admin/products/edit/${product.id}`}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit
                               </Link>
@@ -289,22 +356,36 @@ export default function ProductsPage() {
             </Table>
           </div>
 
-          <div className="flex items-center justify-between mt-4">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Showing <span className="font-medium">{filteredProducts.length}</span> of{" "}
-              <span className="font-medium">{products.length}</span> products
+          {/* Pagination controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Page {currentPage} of {totalPages}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled>
-                Previous
-              </Button>
-              <Button variant="outline" size="sm">
-                Next
-              </Button>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

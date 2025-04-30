@@ -4,6 +4,10 @@ export class DBService {
   client = new Client();
   database;
   storage;
+  databaseId = "680f58ff0022c60de3f1";
+  productsCollectionId = "680f5ebe002589967ce1";
+  categoriesCollectionId = "680f5ed400232721c3a9";
+  storageId = "680f59ea002f06770208";
 
   constructor() {
     this.client
@@ -49,8 +53,8 @@ export class DBService {
   }) {
     try {
       return await this.database.createDocument(
-        "680f58ff0022c60de3f1",
-        "680f5ebe002589967ce1",
+        this.databaseId,
+        this.productsCollectionId,
         ID.unique(),
         {
           name,
@@ -71,42 +75,51 @@ export class DBService {
       );
     } catch (error) {
       console.error("Error adding new product:", error);
+      throw error;
     }
   }
 
   // get all products that are not disabled
-  async getAllProductsNotDisabled() {
+  async getAllProductsNotDisabled(page = 1, limit = 10) {
     try {
       return await this.database.listDocuments(
-        "680f58ff0022c60de3f1",
-        "680f5ebe002589967ce1",
-        [Query.equal("is_disabled", false)]
+        this.databaseId,
+        this.productsCollectionId,
+        [
+          Query.equal("is_disabled", false),
+          Query.limit(limit),
+          Query.offset((page - 1) * limit),
+        ]
       );
     } catch (error) {
       console.error("Error getting all products:", error);
+      throw error;
     }
   }
-  async getAllProducts() {
+
+  async getAllProducts(page = 1, limit = 10) {
     try {
       return await this.database.listDocuments(
-        "680f58ff0022c60de3f1",
-        "680f5ebe002589967ce1"
+        this.databaseId,
+        this.productsCollectionId,
+        [Query.limit(limit), Query.offset((page - 1) * limit)]
       );
     } catch (error) {
       console.error("Error getting all products:", error);
+      throw error;
     }
   }
 
   async getProductById(id: string) {
     try {
       return await this.database.getDocument(
-        "680f58ff0022c60de3f1",
-        "680f5ebe002589967ce1",
-        id,
-        [Query.equal("is_disabled", false)]
+        this.databaseId,
+        this.productsCollectionId,
+        id
       );
     } catch (error) {
       console.error("Error getting product by ID:", error);
+      throw error;
     }
   }
 
@@ -144,8 +157,8 @@ export class DBService {
   ) {
     try {
       return await this.database.updateDocument(
-        "680f58ff0022c60de3f1",
-        "680f5ebe002589967ce1",
+        this.databaseId,
+        this.productsCollectionId,
         id,
         {
           name,
@@ -165,116 +178,250 @@ export class DBService {
       );
     } catch (error) {
       console.error("Error updating product:", error);
+      throw error;
     }
   }
 
   async deleteProduct(id: string) {
     try {
       return await this.database.deleteDocument(
-        "680f58ff0022c60de3f1",
-        "680f5ebe002589967ce1",
+        this.databaseId,
+        this.productsCollectionId,
         id
       );
     } catch (error) {
       console.error("Error deleting product:", error);
+      throw error;
+    }
+  }
+
+  // Get products count by category ID
+  async getProductCountByCategory(categoryId: string) {
+    try {
+      const result = await this.database.listDocuments(
+        this.databaseId,
+        this.productsCollectionId,
+        [Query.search("categories", categoryId)]
+      );
+      return result.total;
+    } catch (error) {
+      console.error(
+        `Error getting product count for category ${categoryId}:`,
+        error
+      );
+      return 0;
     }
   }
 
   // Categories
 
-  async addNewCategory(name: string, description: string) {
+  async addNewCategory(
+    name: string,
+    description: string = "",
+    imageId: string = ""
+  ) {
     try {
+      // The issue is likely that the database expects different field names
+      // Let's try with a more standard approach using title instead of name
+      const data: any = {
+        title: name, // Using 'title' instead of 'name'
+        description,
+      };
+
+      // Only add image if provided
+      if (imageId) {
+        data.imageId = imageId;
+      }
+
       return await this.database.createDocument(
-        "680f58ff0022c60de3f1",
-        "680f5ed400232721c3a9",
+        this.databaseId,
+        this.categoriesCollectionId,
         ID.unique(),
-        {
-          name,
-          description,
-        }
+        data
       );
     } catch (error) {
       console.error("Error adding new category:", error);
+      throw error;
     }
   }
 
-  async getAllCategories() {
+  async getAllCategories(page = 1, limit = 10) {
     try {
-      return await this.database.listDocuments(
-        "680f58ff0022c60de3f1",
-        "680f5ed400232721c3a9"
+      const categories = await this.database.listDocuments(
+        this.databaseId,
+        this.categoriesCollectionId,
+        [Query.limit(limit), Query.offset((page - 1) * limit)]
       );
+
+      // Enhanced categories with product counts and image URLs
+      const enhancedCategories = await Promise.all(
+        categories.documents.map(async (category: any) => {
+          const productCount = await this.getProductCountByCategory(
+            category.$id
+          );
+
+          // Generate image URL if image exists
+          let imageUrl = null;
+          if (category.imageId) {
+            imageUrl = this.storage.getFilePreview(
+              this.storageId,
+              category.imageId
+            );
+          }
+
+          return {
+            id: category.$id,
+            name: category.title || category.name, // Try both field names
+            description: category.description || "",
+            productCount,
+            imageUrl,
+            imageId: category.imageId || null,
+            ...category,
+          };
+        })
+      );
+
+      return {
+        documents: enhancedCategories,
+        total: categories.total,
+      };
     } catch (error) {
       console.error("Error getting all categories:", error);
+      throw error;
     }
   }
 
   async getCategoryById(id: string) {
     try {
-      return await this.database.getDocument(
-        "680f58ff0022c60de3f1",
-        "680f5ed400232721c3a9",
+      const category = await this.database.getDocument(
+        this.databaseId,
+        this.categoriesCollectionId,
         id
       );
+
+      // Get product count for this category
+      const productCount = await this.getProductCountByCategory(id);
+
+      // Generate image URL if image exists
+      let imageUrl = null;
+      if (category.imageId) {
+        imageUrl = this.storage.getFilePreview(
+          this.storageId,
+          category.imageId
+        );
+      }
+
+      return {
+        id: category.$id,
+        name: category.title || category.name, // Try both field names
+        description: category.description || "",
+        productCount,
+        imageUrl,
+        imageId: category.imageId || null,
+        ...category,
+      };
     } catch (error) {
       console.error("Error getting category by ID:", error);
+      throw error;
     }
   }
 
-  async updateCategory(id: string, name: string, description: string) {
+  async updateCategory(
+    id: string,
+    name: string,
+    description: string = "",
+    imageId?: string
+  ) {
     try {
+      // Use title instead of name to match the database schema
+      const data: any = {
+        title: name, // Using 'title' instead of 'name'
+        description,
+      };
+
+      // Only update image if provided
+      if (imageId !== undefined) {
+        data.imageId = imageId;
+      }
+
       return await this.database.updateDocument(
-        "680f58ff0022c60de3f1",
-        "680f5ed400232721c3a9",
+        this.databaseId,
+        this.categoriesCollectionId,
         id,
-        {
-          name,
-          description,
-        }
+        data
       );
     } catch (error) {
       console.error("Error updating category:", error);
+      throw error;
     }
   }
 
   async deleteCategory(id: string) {
     try {
       return await this.database.deleteDocument(
-        "680f58ff0022c60de3f1",
-        "680f5ed400232721c3a9",
+        this.databaseId,
+        this.categoriesCollectionId,
         id
       );
     } catch (error) {
       console.error("Error deleting category:", error);
+      throw error;
     }
   }
 
   // Upload image to storage
   async uploadImage(file: File) {
     try {
-      return await this.storage.createFile(
-        "680f59ea002f06770208",
+      const response = await this.storage.createFile(
+        this.storageId,
         ID.unique(),
         file
       );
+
+      // Return both the file ID and the preview URL
+      return {
+        fileId: response.$id,
+        previewUrl: this.storage.getFilePreview(this.storageId, response.$id),
+      };
     } catch (error) {
       console.error("Error uploading image:", error);
+      throw error;
     }
   }
 
   async deleteImage(fileId: string) {
     try {
-      return await this.storage.deleteFile("680f59ea002f06770208", fileId);
+      return await this.storage.deleteFile(this.storageId, fileId);
     } catch (error) {
       console.error("Error deleting image:", error);
+      throw error;
     }
   }
 
   async getImage(fileId: string) {
     try {
-      return this.storage.getFilePreview("680f59ea002f06770208", fileId);
+      return this.storage.getFilePreview(this.storageId, fileId);
     } catch (error) {
       console.error("Error getting image:", error);
+      throw error;
+    }
+  }
+
+  // Upload multiple images and return array of preview URLs
+  async uploadImages(files: File[]) {
+    try {
+      const results = [];
+      for (const file of files) {
+        const upload = await this.uploadImage(file);
+        results.push({
+          fileId: upload.fileId,
+          previewUrl: upload.previewUrl,
+        });
+      }
+      return results;
+    } catch (error) {
+      console.error("Error uploading multiple images:", error);
+      throw error;
     }
   }
 }
