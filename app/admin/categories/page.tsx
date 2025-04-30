@@ -130,7 +130,7 @@ export default function CategoriesPage() {
       if (selectedImage) {
         const uploadResult = await dbService.uploadImage(selectedImage);
         if (uploadResult) {
-          imageId = uploadResult.fileId;
+          imageId = uploadResult.image;
         }
       }
 

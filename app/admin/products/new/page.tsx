@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, X, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,12 +26,43 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import dbService from "@/appwrite/database";
 
 export default function NewProductPage() {
   const { toast } = useToast();
   const [productImages, setProductImages] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
+    []
+  );
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const MAX_IMAGES = 8;
+  const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const result = await dbService.getAllCategories(1, 100);
+        if (result && result.documents) {
+          setCategories(
+            result.documents.map((cat: any) => ({ id: cat.id, name: cat.name }))
+          );
+        }
+      } catch (e) {
+        // Optionally handle error
+      }
+    };
+    fetchCategories();
+    // Clean up object URLs on unmount
+    return () => {
+      productImages.forEach(
+        (url) => url.startsWith("blob:") && URL.revokeObjectURL(url)
+      );
+    };
+    // eslint-disable-next-line
+  }, []);
 
   const colors = [
     { id: "black", name: "Black", value: "#000000" },
@@ -55,20 +86,53 @@ export default function NewProductPage() {
   ];
 
   const handleAddImage = () => {
-    // In a real app, this would handle file uploads
-    // For now, we'll just add a placeholder image
-    setProductImages([
-      ...productImages,
-      `/placeholder.svg?height=300&width=300&text=Image ${
-        productImages.length + 1
-      }`,
-    ]);
+    const input = document.getElementById("image-upload") as HTMLInputElement;
+    if (input) input.click();
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    if (productImages.length + files.length > MAX_IMAGES) {
+      toast({
+        title: "Error",
+        description: `You can upload up to ${MAX_IMAGES} images only.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    const validFiles: File[] = [];
+    const newPreviews: string[] = [];
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        toast({
+          title: "Error",
+          description: `${file.name} is not a valid image file.`,
+          variant: "destructive",
+        });
+        continue;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        toast({
+          title: "Error",
+          description: `${file.name} is too large. Max size is 2MB.`,
+          variant: "destructive",
+        });
+        continue;
+      }
+      validFiles.push(file);
+      newPreviews.push(URL.createObjectURL(file));
+    }
+    setImageFiles((prev) => [...prev, ...validFiles]);
+    setProductImages((prev) => [...prev, ...newPreviews]);
   };
 
   const handleRemoveImage = (index: number) => {
-    const newImages = [...productImages];
-    newImages.splice(index, 1);
-    setProductImages(newImages);
+    if (productImages[index]?.startsWith("blob:")) {
+      URL.revokeObjectURL(productImages[index]);
+    }
+    setProductImages((prev) => prev.filter((_, i) => i !== index));
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleColorToggle = (colorId: string) => {
@@ -147,17 +211,27 @@ export default function NewProductPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="category">Category</Label>
-                      <Select>
+                      <Select
+                        value={selectedCategory}
+                        onValueChange={setSelectedCategory}
+                        disabled={categories.length === 0}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="tops">Tops</SelectItem>
-                          <SelectItem value="bottoms">Bottoms</SelectItem>
-                          <SelectItem value="dresses">Dresses</SelectItem>
-                          <SelectItem value="outerwear">Outerwear</SelectItem>
+                          {categories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
+                      {categories.length === 0 && (
+                        <div className="text-sm text-muted-foreground mt-2">
+                          No categories found. Please add a category first.
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -360,14 +434,26 @@ export default function NewProductPage() {
                     </Button>
                   </div>
                 ))}
-                <Button
-                  variant="outline"
-                  className="aspect-square flex flex-col items-center justify-center border-dashed"
-                  onClick={handleAddImage}
-                >
-                  <Upload className="h-6 w-6 mb-2" />
-                  <span className="text-sm">Add Image</span>
-                </Button>
+                {productImages.length < MAX_IMAGES && (
+                  <Button
+                    variant="outline"
+                    className="aspect-square flex flex-col items-center justify-center border-dashed"
+                    onClick={handleAddImage}
+                    type="button"
+                  >
+                    <Upload className="h-6 w-6 mb-2" />
+                    <span className="text-sm">Add Image</span>
+                  </Button>
+                )}
+                <input
+                  type="file"
+                  id="image-upload"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                  disabled={productImages.length >= MAX_IMAGES}
+                />
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 You can upload up to 8 images. First image will be used as the
