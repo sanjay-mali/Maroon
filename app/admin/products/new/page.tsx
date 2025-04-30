@@ -1,25 +1,37 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import Link from "next/link"
-import { ChevronLeft, X, Upload } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { useToast } from "@/components/ui/use-toast"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState } from "react";
+import Link from "next/link";
+import { ChevronLeft, X, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function NewProductPage() {
-  const { toast } = useToast()
-  const [productImages, setProductImages] = useState<string[]>([])
-  const [selectedColors, setSelectedColors] = useState<string[]>([])
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([])
+  const { toast } = useToast();
+  const [productImages, setProductImages] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
 
   const colors = [
     { id: "black", name: "Black", value: "#000000" },
@@ -31,7 +43,7 @@ export default function NewProductPage() {
     { id: "purple", name: "Purple", value: "#800080" },
     { id: "pink", name: "Pink", value: "#FFC0CB" },
     { id: "gray", name: "Gray", value: "#808080" },
-  ]
+  ];
 
   const sizes = [
     { id: "xs", label: "XS" },
@@ -40,35 +52,48 @@ export default function NewProductPage() {
     { id: "l", label: "L" },
     { id: "xl", label: "XL" },
     { id: "xxl", label: "XXL" },
-  ]
+  ];
 
   const handleAddImage = () => {
     // In a real app, this would handle file uploads
     // For now, we'll just add a placeholder image
-    setProductImages([...productImages, `/placeholder.svg?height=300&width=300&text=Image ${productImages.length + 1}`])
-  }
+    setProductImages([
+      ...productImages,
+      `/placeholder.svg?height=300&width=300&text=Image ${
+        productImages.length + 1
+      }`,
+    ]);
+  };
 
   const handleRemoveImage = (index: number) => {
-    const newImages = [...productImages]
-    newImages.splice(index, 1)
-    setProductImages(newImages)
-  }
+    const newImages = [...productImages];
+    newImages.splice(index, 1);
+    setProductImages(newImages);
+  };
 
   const handleColorToggle = (colorId: string) => {
-    setSelectedColors((prev) => (prev.includes(colorId) ? prev.filter((id) => id !== colorId) : [...prev, colorId]))
-  }
+    setSelectedColors((prev) =>
+      prev.includes(colorId)
+        ? prev.filter((id) => id !== colorId)
+        : [...prev, colorId]
+    );
+  };
 
   const handleSizeToggle = (sizeId: string) => {
-    setSelectedSizes((prev) => (prev.includes(sizeId) ? prev.filter((id) => id !== sizeId) : [...prev, sizeId]))
-  }
+    setSelectedSizes((prev) =>
+      prev.includes(sizeId)
+        ? prev.filter((id) => id !== sizeId)
+        : [...prev, sizeId]
+    );
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     toast({
       title: "Product created",
       description: "The product has been created successfully.",
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -102,7 +127,9 @@ export default function NewProductPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Product Information</CardTitle>
-                  <CardDescription>Enter the basic details of your product.</CardDescription>
+                  <CardDescription>
+                    Enter the basic details of your product.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -111,7 +138,11 @@ export default function NewProductPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" placeholder="Enter product description" rows={5} />
+                    <Textarea
+                      id="description"
+                      placeholder="Enter product description"
+                      rows={5}
+                    />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -128,10 +159,6 @@ export default function NewProductPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="brand">Brand</Label>
-                      <Input id="brand" placeholder="Enter brand name" />
-                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -139,7 +166,9 @@ export default function NewProductPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Pricing & Inventory</CardTitle>
-                  <CardDescription>Set your product's price and inventory details.</CardDescription>
+                  <CardDescription>
+                    Set your product's price and inventory details.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -178,7 +207,9 @@ export default function NewProductPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Colors</CardTitle>
-                  <CardDescription>Select the available colors for this product.</CardDescription>
+                  <CardDescription>
+                    Select the available colors for this product.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-3">
@@ -186,14 +217,22 @@ export default function NewProductPage() {
                       <div
                         key={color.id}
                         className={`w-10 h-10 rounded-full cursor-pointer flex items-center justify-center ${
-                          selectedColors.includes(color.id) ? "ring-2 ring-offset-2 ring-black" : ""
+                          selectedColors.includes(color.id)
+                            ? "ring-2 ring-offset-2 ring-black"
+                            : ""
                         }`}
                         style={{ backgroundColor: color.value }}
                         onClick={() => handleColorToggle(color.id)}
                         title={color.name}
                       >
                         {selectedColors.includes(color.id) && (
-                          <span className={`text-xs ${color.id === "white" ? "text-black" : "text-white"}`}>✓</span>
+                          <span
+                            className={`text-xs ${
+                              color.id === "white" ? "text-black" : "text-white"
+                            }`}
+                          >
+                            ✓
+                          </span>
                         )}
                       </div>
                     ))}
@@ -204,7 +243,9 @@ export default function NewProductPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Sizes</CardTitle>
-                  <CardDescription>Select the available sizes for this product.</CardDescription>
+                  <CardDescription>
+                    Select the available sizes for this product.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-3">
@@ -230,7 +271,9 @@ export default function NewProductPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>SEO Information</CardTitle>
-                  <CardDescription>Optimize your product for search engines.</CardDescription>
+                  <CardDescription>
+                    Optimize your product for search engines.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -239,11 +282,18 @@ export default function NewProductPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="meta-description">Meta Description</Label>
-                    <Textarea id="meta-description" placeholder="Enter meta description" rows={3} />
+                    <Textarea
+                      id="meta-description"
+                      placeholder="Enter meta description"
+                      rows={3}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="keywords">Keywords</Label>
-                    <Input id="keywords" placeholder="Enter keywords separated by commas" />
+                    <Input
+                      id="keywords"
+                      placeholder="Enter keywords separated by commas"
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -251,7 +301,9 @@ export default function NewProductPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Additional Information</CardTitle>
-                  <CardDescription>Add extra details about your product.</CardDescription>
+                  <CardDescription>
+                    Add extra details about your product.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -260,7 +312,11 @@ export default function NewProductPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="care">Care Instructions</Label>
-                    <Textarea id="care" placeholder="Enter care instructions" rows={3} />
+                    <Textarea
+                      id="care"
+                      placeholder="Enter care instructions"
+                      rows={3}
+                    />
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox id="featured" />
@@ -285,7 +341,10 @@ export default function NewProductPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 {productImages.map((image, index) => (
-                  <div key={index} className="relative aspect-square rounded-md overflow-hidden border">
+                  <div
+                    key={index}
+                    className="relative aspect-square rounded-md overflow-hidden border"
+                  >
                     <img
                       src={image || "/placeholder.svg"}
                       alt={`Product ${index + 1}`}
@@ -311,7 +370,8 @@ export default function NewProductPage() {
                 </Button>
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
-                You can upload up to 8 images. First image will be used as the product thumbnail.
+                You can upload up to 8 images. First image will be used as the
+                product thumbnail.
               </div>
             </CardContent>
           </Card>
@@ -319,7 +379,9 @@ export default function NewProductPage() {
           <Card>
             <CardHeader>
               <CardTitle>Product Status</CardTitle>
-              <CardDescription>Control the visibility of your product.</CardDescription>
+              <CardDescription>
+                Control the visibility of your product.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -375,7 +437,7 @@ export default function NewProductPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-import { ShoppingBag } from "lucide-react"
+import { ShoppingBag } from "lucide-react";
