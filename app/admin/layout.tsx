@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { usePathname, useRouter } from "next/navigation"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -19,27 +19,27 @@ import {
   Sun,
   Moon,
   Loader2,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { useToast } from "@/components/ui/use-toast"
-import { ThemeProvider } from "@/components/theme-provider"
-import { useTheme } from "next-themes"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useToast } from "@/components/ui/use-toast";
+import { ThemeProvider } from "@/components/theme-provider";
+import { useTheme } from "next-themes";
 
 interface AdminLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
-  const pathname = usePathname()
-  const { toast } = useToast()
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-  const router = useRouter()
+  const pathname = usePathname();
+  const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   const navItems = [
     { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -49,28 +49,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { title: "Users", href: "/admin/users", icon: Users },
     { title: "Addresses", href: "/admin/addresses", icon: MapPin },
     { title: "Settings", href: "/admin/settings", icon: Settings },
-  ]
+  ];
 
   const handleLogout = async () => {
-    
     toast({
       title: "Logged out successfully",
       description: "You have been logged out of your account.",
-    })
-    router.push("/login")
-  }
-
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="flex flex-col items-center gap-2">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">Loading admin panel...</p>
-        </div>
-      </div>
-    )
-  }
-
+    });
+    router.push("/login");
+  };
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
@@ -92,8 +79,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <nav className="flex-1 overflow-auto py-4">
             <ul className="space-y-1 px-2">
               {navItems.map((item) => {
-                const isActive = pathname === item.href
-                const Icon = item.icon
+                const isActive = pathname === item.href;
+                const Icon = item.icon;
                 return (
                   <li key={item.href}>
                     <Link
@@ -108,7 +95,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       {item.title}
                     </Link>
                   </li>
-                )
+                );
               })}
             </ul>
           </nav>
@@ -152,8 +139,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   <nav className="flex-1 overflow-auto py-4">
                     <ul className="space-y-1 px-2">
                       {navItems.map((item) => {
-                        const isActive = pathname === item.href
-                        const Icon = item.icon
+                        const isActive = pathname === item.href;
+                        const Icon = item.icon;
                         return (
                           <li key={item.href}>
                             <Link
@@ -168,7 +155,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                               {item.title}
                             </Link>
                           </li>
-                        )
+                        );
                       })}
                     </ul>
                   </nav>
@@ -188,8 +175,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
             <div className="font-semibold">Maroon Admin</div>
 
-            <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-              {mounted && theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              {mounted && theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
               <span className="sr-only">Toggle theme</span>
             </Button>
           </header>
@@ -198,5 +193,5 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </div>
     </ThemeProvider>
-  )
+  );
 }
