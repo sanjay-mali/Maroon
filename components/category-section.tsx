@@ -1,41 +1,43 @@
-import Link from "next/link"
-import Image from "next/image"
-
-const categories = [
-  {
-    id: "tops",
-    name: "Tops",
-    image: "/placeholder.svg?height=600&width=400",
-    link: "/products?category=tops",
-  },
-  {
-    id: "dresses",
-    name: "Dresses",
-    image: "/placeholder.svg?height=600&width=400",
-    link: "/products?category=dresses",
-  },
-  {
-    id: "bottoms",
-    name: "Bottoms",
-    image: "/placeholder.svg?height=600&width=400",
-    link: "/products?category=bottoms",
-  },
-  {
-    id: "outerwear",
-    name: "Outerwear",
-    image: "/placeholder.svg?height=600&width=400",
-    link: "/products?category=outerwear",
-  },
-]
+import Link from "next/link";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import dbService from "@/appwrite/database";
 
 export default function CategorySection() {
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const result = await dbService.getAllCategories(1, 12);
+        if (result && result.documents) {
+          setCategories(result.documents);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="h-40 flex items-center justify-center">Loading...</div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
       {categories.map((category) => (
-        <Link key={category.id} href={category.link} className="category-card">
+        <Link
+          key={category.id}
+          href={`/products?category=${category.id}`}
+          className="category-card"
+        >
           <div className="aspect-[3/4] relative overflow-hidden">
             <Image
-              src={category.image || "/placeholder.svg"}
+              src={category.imageId || "/placeholder.svg"}
               alt={category.name}
               fill
               className="object-cover transition-transform duration-500 hover:scale-105"
@@ -48,5 +50,5 @@ export default function CategorySection() {
         </Link>
       ))}
     </div>
-  )
+  );
 }
