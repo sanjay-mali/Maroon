@@ -3,17 +3,14 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 
-const sizes = [
-  { id: "xs", label: "XS" },
-  { id: "s", label: "S" },
-  { id: "m", label: "M" },
-  { id: "l", label: "L" },
-  { id: "xl", label: "XL" },
-  { id: "xxl", label: "XXL" },
-]
+interface SizeSelectorProps {
+  sizes: { id: string; label?: string }[]
+}
 
-export default function SizeSelector() {
-  const [selectedSize, setSelectedSize] = useState("m")
+export default function SizeSelector({ sizes = [] }: SizeSelectorProps) {
+  const [selectedSize, setSelectedSize] = useState(sizes[0]?.id || "")
+
+  if (!sizes.length) return null
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -30,7 +27,7 @@ export default function SizeSelector() {
           whileTap={{ scale: 0.95 }}
           transition={{ duration: 0.2 }}
         >
-          {size.label}
+          {size.label || size.id}
         </motion.button>
       ))}
     </div>
