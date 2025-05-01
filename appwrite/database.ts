@@ -213,6 +213,25 @@ export class DBService {
     }
   }
 
+  // Get products by category ID (array field)
+  async getProductsByCategory(categoryId: string, page = 1, limit = 24) {
+    try {
+      return await this.database.listDocuments(
+        this.databaseId,
+        this.productsCollectionId,
+        [
+          Query.equal("is_disabled", false),
+          Query.equal("categories", categoryId),
+          Query.limit(limit),
+          Query.offset((page - 1) * limit),
+        ]
+      );
+    } catch (error) {
+      console.error("Error getting products by category:", error);
+      throw error;
+    }
+  }
+
   // Categories
 
   async addNewCategory({
