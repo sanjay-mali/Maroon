@@ -1,17 +1,33 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Search, ShoppingBag, User, Menu, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { useToast } from "@/components/ui/use-toast"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Search, ShoppingBag, User, Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useToast } from "@/components/ui/use-toast";
+import dbService from "@/appwrite/database";
 
 export default function Navbar() {
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const { toast } = useToast()
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { toast } = useToast();
+  const [categories, setCategories] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const result = await dbService.getAllCategories(1, 20);
+        if (result && result.documents) {
+          setCategories(result.documents);
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    };
+    fetchCategories();
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b">
@@ -38,34 +54,25 @@ export default function Navbar() {
                 </Link>
               </div>
               <nav className="flex flex-col gap-4">
-                <Link href="/" className="text-lg font-medium hover:text-primary transition-colors">
+                <Link
+                  href="/"
+                  className="text-lg font-medium hover:text-primary transition-colors"
+                >
                   Home
                 </Link>
+                {categories.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/products?category=${encodeURIComponent(cat.name)}`}
+                    className="text-lg font-medium hover:text-primary transition-colors"
+                  >
+                    {cat.name}
+                  </Link>
+                ))}
                 <Link
-                  href="/products?category=tops"
-                  className="text-lg font-medium hover:text-primary transition-colors"
+                  href="/sale"
+                  className="text-lg font-medium text-red-600 hover:text-red-700 transition-colors"
                 >
-                  Tops
-                </Link>
-                <Link
-                  href="/products?category=dresses"
-                  className="text-lg font-medium hover:text-primary transition-colors"
-                >
-                  Dresses
-                </Link>
-                <Link
-                  href="/products?category=bottoms"
-                  className="text-lg font-medium hover:text-primary transition-colors"
-                >
-                  Bottoms
-                </Link>
-                <Link
-                  href="/products?category=outerwear"
-                  className="text-lg font-medium hover:text-primary transition-colors"
-                >
-                  Outerwear
-                </Link>
-                <Link href="/sale" className="text-lg font-medium text-red-600 hover:text-red-700 transition-colors">
                   Sale
                 </Link>
                 <div className="border-t my-4 pt-4">
@@ -94,31 +101,25 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link
+              href="/"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
               Home
             </Link>
-            <Link href="/products?category=tops" className="text-sm font-medium hover:text-primary transition-colors">
-              Tops
-            </Link>
+            {categories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/products?category=${encodeURIComponent(cat.name)}`}
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                {cat.name}
+              </Link>
+            ))}
             <Link
-              href="/products?category=dresses"
-              className="text-sm font-medium hover:text-primary transition-colors"
+              href="/sale"
+              className="text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
             >
-              Dresses
-            </Link>
-            <Link
-              href="/products?category=bottoms"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Bottoms
-            </Link>
-            <Link
-              href="/products?category=outerwear"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Outerwear
-            </Link>
-            <Link href="/sale" className="text-sm font-medium text-red-600 hover:text-red-700 transition-colors">
               Sale
             </Link>
           </nav>
@@ -127,13 +128,26 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             {isSearchOpen ? (
               <div className="absolute inset-0 bg-white z-20 flex items-center px-4">
-                <Input type="search" placeholder="Search for products..." className="flex-1 mr-2" autoFocus />
-                <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(false)}>
+                <Input
+                  type="search"
+                  placeholder="Search for products..."
+                  className="flex-1 mr-2"
+                  autoFocus
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsSearchOpen(false)}
+                >
                   <X className="h-5 w-5" />
                 </Button>
               </div>
             ) : (
-              <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(true)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSearchOpen(true)}
+              >
                 <Search className="h-5 w-5" />
                 <span className="sr-only">Search</span>
               </Button>
@@ -147,7 +161,12 @@ export default function Navbar() {
                 <span className="sr-only">Cart</span>
               </Link>
             </Button>
-            <Button variant="ghost" size="icon" asChild className="hidden md:flex">
+            <Button
+              variant="ghost"
+              size="icon"
+              asChild
+              className="hidden md:flex"
+            >
               <Link href="/profile">
                 <User className="h-5 w-5" />
                 <span className="sr-only">Account</span>
@@ -157,5 +176,5 @@ export default function Navbar() {
         </div>
       </div>
     </header>
-  )
+  );
 }
