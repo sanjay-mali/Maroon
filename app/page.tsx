@@ -1,17 +1,16 @@
-import HeroBanner from "@/components/hero-banner"
-import CategorySection from "@/components/category-section"
-import FeaturedProducts from "@/components/featured-products"
-import BestSellers from "@/components/best-sellers"
-import TrustBadges from "@/components/trust-badges"
-import NewArrivals from "@/components/new-arrivals"
-import PromoBanner from "@/components/promo-banner"
-import type { Metadata } from "next"
+import HeroBanner from "@/components/hero-banner";
+import CategorySection from "@/components/category-section";
+import FeaturedProducts from "@/components/featured-products";
+import TrustBadges from "@/components/trust-badges";
+import NewArrivals from "@/components/new-arrivals";
+import PromoBanner from "@/components/promo-banner";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Maroon - Buy Trendy Western Wear for Women Online",
   description:
     "Shop the latest collection of women's western wear including T-shirts, pants, skirts, and more. Premium quality, trendy designs.",
-}
+};
 
 export default function Home() {
   return (
@@ -33,7 +32,9 @@ export default function Home() {
       <section className="py-16">
         <div className="container-custom">
           <h2 className="section-title">Shop By Category</h2>
-          <p className="section-subtitle">Explore our curated collection of premium women's western wear</p>
+          <p className="section-subtitle">
+            Explore our curated collection of premium women's western wear
+          </p>
           <CategorySection />
         </div>
       </section>
@@ -42,7 +43,9 @@ export default function Home() {
       <section className="py-16 bg-secondary">
         <div className="container-custom">
           <h2 className="section-title">Featured Collection</h2>
-          <p className="section-subtitle">Handpicked designs for the modern woman</p>
+          <p className="section-subtitle">
+            Handpicked designs for the modern woman
+          </p>
           <FeaturedProducts />
         </div>
       </section>
@@ -50,23 +53,16 @@ export default function Home() {
       {/* Promo Banner */}
       <PromoBanner />
 
-      {/* Best Sellers */}
-      <section className="py-16">
-        <div className="container-custom">
-          <h2 className="section-title">Best Sellers</h2>
-          <p className="section-subtitle">Our most loved pieces that are flying off the shelves</p>
-          <BestSellers />
-        </div>
-      </section>
-
       {/* New Arrivals */}
       <section className="py-16 bg-secondary">
         <div className="container-custom">
           <h2 className="section-title">New Arrivals</h2>
-          <p className="section-subtitle">Fresh designs to elevate your wardrobe</p>
+          <p className="section-subtitle">
+            Fresh designs to elevate your wardrobe
+          </p>
           <NewArrivals />
         </div>
       </section>
     </>
-  )
+  );
 }
