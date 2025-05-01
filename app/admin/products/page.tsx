@@ -194,7 +194,7 @@ export default function ProductsPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 className="text-2xl md:text-3xl font-bold">Products</h1>
         <Button asChild>
-          <Link href="/admin/products/new">
+          <Link href="/admin/products/add">
             <Plus className="h-4 w-4 mr-2" />
             Add New Product
           </Link>
