@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { X, Upload, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,7 @@ export interface Product {
 
 interface ProductFormProps {
   isEdit: boolean;
+  productId?: string;
 }
 
 const defaultColors = [
@@ -56,10 +57,7 @@ const defaultSizes = [
   { id: "xxl", label: "XXL" },
 ];
 
-const ProductForm: React.FC<ProductFormProps> = ({ isEdit }) => {
-  const params = useParams();
-  const productId = isEdit ? (params.id as string) : null;
-
+const ProductForm: React.FC<ProductFormProps> = ({ isEdit, productId }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -150,6 +148,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ isEdit }) => {
 
     init();
   }, [isEdit, productId, toast]);
+
+  console.log("categories", categories);
 
   useEffect(() => {
     setIsPublished(status === "published");
@@ -268,6 +268,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ isEdit }) => {
       }
       const allImages = [...existingImages, ...uploadedImageUrls];
 
+      // Ensure categories is an array of string IDs
+      const categoryIds = selectedCategories.map((cat: any) =>
+        typeof cat === "string" ? cat : cat.id || cat.$id || ""
+      );
+
       const productData: Product = {
         name,
         description,
@@ -275,7 +280,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isEdit }) => {
         stock: parseInt(stock) || 0,
         sizes,
         colors,
-        categories: selectedCategories,
+        categories: categoryIds,
         images: allImages, // store URLs directly
         is_published: isPublished,
         is_draft: isDraft,

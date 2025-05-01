@@ -3,16 +3,14 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 
-const colors = [
-  { id: "black", name: "Black", value: "#000000" },
-  { id: "white", name: "White", value: "#FFFFFF" },
-  { id: "navy", name: "Navy", value: "#0A192F" },
-  { id: "gray", name: "Gray", value: "#6B7280" },
-  { id: "red", name: "Red", value: "#EF4444" },
-]
+interface ColorSelectorProps {
+  colors: { id: string; name?: string; value?: string }[]
+}
 
-export default function ColorSelector() {
-  const [selectedColor, setSelectedColor] = useState("black")
+export default function ColorSelector({ colors = [] }: ColorSelectorProps) {
+  const [selectedColor, setSelectedColor] = useState(colors[0]?.id || "")
+
+  if (!colors.length) return null
 
   return (
     <div className="flex gap-2">
@@ -22,9 +20,9 @@ export default function ColorSelector() {
           className={`w-8 h-8 rounded-full flex items-center justify-center ${
             selectedColor === color.id ? "ring-2 ring-offset-2 ring-black" : ""
           }`}
-          style={{ backgroundColor: color.value }}
+          style={{ backgroundColor: color.value || color.id }}
           onClick={() => setSelectedColor(color.id)}
-          aria-label={`Select ${color.name} color`}
+          aria-label={`Select ${color.name || color.id} color`}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           transition={{ duration: 0.2 }}
