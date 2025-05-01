@@ -73,7 +73,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 height={50}
                 className="h-auto"
               />
-              <span className="font-bold text-lg">Admin</span>
             </Link>
           </div>
           <nav className="flex-1 overflow-auto py-4">
