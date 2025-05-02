@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import dbService from "@/appwrite/database";
 import ProductCard from "@/components/product-card";
+import SkeletonProductCard from "@/components/skeleton-product-card";
 
 export default function ProductsGrid() {
   const searchParams = useSearchParams();
@@ -16,6 +17,7 @@ export default function ProductsGrid() {
     .filter(Boolean);
   const minPrice = Number(searchParams.get("minPrice")) || 500;
   const maxPrice = Number(searchParams.get("maxPrice")) || 10000;
+  const searchValue = searchParams.get("search")?.toLowerCase() || "";
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +25,16 @@ export default function ProductsGrid() {
   // Filtering logic
   const filterProducts = (products: any[]) => {
     return products.filter((product) => {
+      // Search filter
+      if (
+        searchValue &&
+        !(
+          product.name?.toLowerCase().includes(searchValue) ||
+          product.description?.toLowerCase().includes(searchValue)
+        )
+      ) {
+        return false;
+      }
       // Price filter
       const price = product.discount_price || product.price || 0;
       if (price < minPrice || price > maxPrice) return false;
@@ -109,7 +121,7 @@ export default function ProductsGrid() {
       }
     };
     fetchProducts();
-  }, [categoryName]);
+  }, [categoryName, searchValue]);
 
   // Pagination logic
   const [currentPage, setCurrentPage] = useState(1);
@@ -123,7 +135,13 @@ export default function ProductsGrid() {
   );
 
   if (loading) {
-    return <div className="py-12 text-center">Loading products...</div>;
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        {Array(itemsPerPage).fill(0).map((_, i) => (
+          <SkeletonProductCard key={i} />
+        ))}
+      </div>
+    );
   }
 
   if (error) {

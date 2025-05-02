@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import ProductCard from "@/components/product-card";
+import SkeletonProductCard from "@/components/skeleton-product-card";
 import dbService from "@/appwrite/database";
 
 interface ProductListProps {
@@ -41,7 +42,13 @@ export default function ProductList({
   }, [filter, limit]);
 
   if (loading)
-    return <div className="py-12 text-center">Loading products...</div>;
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {Array(limit).fill(0).map((_, i) => (
+          <SkeletonProductCard key={i} />
+        ))}
+      </div>
+    );
   if (error)
     return <div className="py-12 text-center text-red-500">{error}</div>;
   if (!products.length)

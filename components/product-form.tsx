@@ -250,11 +250,68 @@ const ProductForm: React.FC<ProductFormProps> = ({ isEdit, productId }) => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    // Required field checks
+    if (!name.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Product name is required",
+      });
+      return;
+    }
+    if (!description.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Product description is required",
+      });
+      return;
+    }
+    if (!price || isNaN(Number(price)) || Number(price) <= 0) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Valid price is required",
+      });
+      return;
+    }
+    if (!stock || isNaN(Number(stock)) || Number(stock) < 0) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Valid stock quantity is required",
+      });
+      return;
+    }
     if (selectedCategories.length === 0) {
       toast({
         variant: "destructive",
         title: "Error",
         description: "Please select at least one category",
+      });
+      return;
+    }
+    if (sizes.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please add at least one size",
+      });
+      return;
+    }
+    if (colors.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please add at least one color",
+      });
+      return;
+    }
+    if (files.length + existingImages.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please upload at least one product image",
       });
       return;
     }
@@ -811,27 +868,33 @@ const ProductForm: React.FC<ProductFormProps> = ({ isEdit, productId }) => {
               </div>
 
               <div className="flex items-center gap-2">
-                {discountPrice && parseFloat(discountPrice) > 0 ? (
+                {discountPrice &&
+                !isNaN(Number(discountPrice)) &&
+                Number(discountPrice) > 0 &&
+                price &&
+                !isNaN(Number(price)) &&
+                Number(price) > 0 &&
+                Number(discountPrice) < Number(price) ? (
                   <>
                     <span className="font-bold">
                       ₹{parseFloat(discountPrice).toLocaleString()}
                     </span>
                     <span className="text-gray-500 line-through">
-                      ₹{parseFloat(price).toLocaleString() || 0}
+                      ₹{parseFloat(price).toLocaleString()}
                     </span>
                     <span className="text-green-600 text-sm ml-auto">
-                      {price && discountPrice
-                        ? `${Math.round(
-                            (1 -
-                              parseFloat(discountPrice) / parseFloat(price)) *
-                              100
-                          )}% off`
-                        : ""}
+                      {`${Math.round(
+                        (1 - parseFloat(discountPrice) / parseFloat(price)) *
+                          100
+                      )}% off`}
                     </span>
                   </>
                 ) : (
                   <span className="font-bold">
-                    ₹{parseFloat(price).toLocaleString() || 0}
+                    ₹
+                    {!isNaN(Number(price)) && price && Number(price) > 0
+                      ? parseFloat(price).toLocaleString()
+                      : "-"}
                   </span>
                 )}
               </div>
