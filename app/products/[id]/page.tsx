@@ -255,7 +255,10 @@ export default function ProductPage() {
           transition={{ duration: 0.5, delay: 0.6 }}
         >
           <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
-          <SimilarProducts />
+          <SimilarProducts
+            productId={product.$id || product.id}
+            categoryIds={product.categories || []}
+          />
         </motion.div>
       </div>
     </>
