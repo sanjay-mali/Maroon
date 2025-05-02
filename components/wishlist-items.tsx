@@ -7,9 +7,10 @@ import { Trash2, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { motion, AnimatePresence } from "framer-motion"
+import { useShopItemActions, ShopItem } from "@/components/hooks/use-shop-item-actions"
 
 // Mock data for wishlist items
-const initialWishlistItems = [
+const initialWishlistItems: ShopItem[] = [
   {
     id: "4",
     name: "Leather Jacket",
@@ -45,25 +46,8 @@ const initialWishlistItems = [
 ]
 
 export default function WishlistItems() {
-  const [wishlistItems, setWishlistItems] = useState(initialWishlistItems)
-  const { toast } = useToast()
-
-  const removeItem = (id: string) => {
-    setWishlistItems((items) => items.filter((item) => item.id !== id))
-    toast({
-      title: "Item removed",
-      description: "The item has been removed from your wishlist.",
-    })
-  }
-
-  const moveToCart = (id: string) => {
-    toast({
-      title: "Added to cart",
-      description: "The item has been added to your cart.",
-    })
-    // In a real app, we would add to cart here before removing from wishlist
-    removeItem(id)
-  }
+  const [wishlistItems, setWishlistItems] = useState<ShopItem[]>(initialWishlistItems)
+  const { removeItem, moveToCart } = useShopItemActions(setWishlistItems, "wishlist")
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
