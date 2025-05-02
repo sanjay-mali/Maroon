@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import dbService from "@/appwrite/database";
+import SkeletonCategoryCard from "./skeleton-category-card";
 
 export default function CategorySection() {
   const [categories, setCategories] = useState<any[]>([]);
@@ -59,7 +60,13 @@ export default function CategorySection() {
 
   if (loading) {
     return (
-      <div className="h-40 flex items-center justify-center">Loading...</div>
+      <div className="flex overflow-x-auto py-2 px-1 scrollbar-thin justify-center gap-10 scrollbar-thumb-gray-300">
+        {Array(8)
+          .fill(0)
+          .map((_, i) => (
+            <SkeletonCategoryCard key={i} />
+          ))}
+      </div>
     );
   }
 

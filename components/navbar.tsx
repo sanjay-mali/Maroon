@@ -9,11 +9,68 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/use-toast";
 import dbService from "@/appwrite/database";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { toast } = useToast();
   const [categories, setCategories] = useState<any[]>([]);
+  const [searchValue, setSearchValue] = useState("");
+  const [debouncedValue, setDebouncedValue] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const router =
+    typeof window !== "undefined"
+      ? require("next/navigation").useRouter()
+      : null;
+
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(searchValue);
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchValue]);
+
+  // Navigate to products page with search param when debouncedValue changes
+  useEffect(() => {
+    if (debouncedValue && isSearchOpen) {
+      if (router)
+        router.push(`/products?search=${encodeURIComponent(debouncedValue)}`);
+    }
+  }, [debouncedValue, isSearchOpen]);
+
+  // Fetch matching products for suggestions
+  useEffect(() => {
+    let active = true;
+    const fetchResults = async () => {
+      if (debouncedValue.trim().length === 0) {
+        setSearchResults([]);
+        setShowDropdown(false);
+        return;
+      }
+      try {
+        // Fetch all products and filter client-side (or use a dedicated search endpoint if available)
+        const res = await dbService.getAllProductsNotDisabled(1, 10);
+        const docs = res?.documents || [];
+        const filtered = docs.filter((p: any) =>
+          p.name?.toLowerCase().includes(debouncedValue.toLowerCase())
+        );
+        if (active) {
+          setSearchResults(filtered);
+          setShowDropdown(true);
+        }
+      } catch {
+        setSearchResults([]);
+        setShowDropdown(false);
+      }
+    };
+    if (isSearchOpen && debouncedValue) fetchResults();
+    else setShowDropdown(false);
+    return () => {
+      active = false;
+    };
+  }, [debouncedValue, isSearchOpen]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -60,15 +117,26 @@ export default function Navbar() {
                 >
                   Home
                 </Link>
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    href={`/products?category=${encodeURIComponent(cat.name)}`}
-                    className="text-lg font-medium hover:text-primary transition-colors"
-                  >
-                    {cat.name}
-                  </Link>
-                ))}
+                {categories.length === 0
+                  ? Array(4)
+                      .fill(0)
+                      .map((_, i) => (
+                        <Skeleton
+                          key={i}
+                          className="h-6 w-32 rounded bg-gray-200"
+                        />
+                      ))
+                  : categories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        href={`/products?category=${encodeURIComponent(
+                          cat.name
+                        )}`}
+                        className="text-lg font-medium hover:text-primary transition-colors"
+                      >
+                        {cat.name}
+                      </Link>
+                    ))}
                 <Link
                   href="/sale"
                   className="text-lg font-medium text-red-600 hover:text-red-700 transition-colors"
@@ -107,15 +175,24 @@ export default function Navbar() {
             >
               Home
             </Link>
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/products?category=${encodeURIComponent(cat.name)}`}
-                className="text-sm font-medium hover:text-primary transition-colors"
-              >
-                {cat.name}
-              </Link>
-            ))}
+            {categories.length === 0
+              ? Array(4)
+                  .fill(0)
+                  .map((_, i) => (
+                    <Skeleton
+                      key={i}
+                      className="h-5 w-20 rounded bg-gray-200"
+                    />
+                  ))
+              : categories.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/products?category=${encodeURIComponent(cat.name)}`}
+                    className="text-sm font-medium hover:text-primary transition-colors"
+                  >
+                    {cat.name}
+                  </Link>
+                ))}
             <Link
               href="/sale"
               className="text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
@@ -127,20 +204,92 @@ export default function Navbar() {
           {/* Actions */}
           <div className="flex items-center gap-2">
             {isSearchOpen ? (
-              <div className="absolute inset-0 bg-white z-20 flex items-center px-4">
-                <Input
-                  type="search"
-                  placeholder="Search for products..."
-                  className="flex-1 mr-2"
-                  autoFocus
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsSearchOpen(false)}
-                >
-                  <X className="h-5 w-5" />
-                </Button>
+              <div className="absolute inset-0 bg-white z-20 flex flex-col items-stretch px-4 pt-4">
+                <div className="relative w-full">
+                  <div className="flex items-center">
+                    <Input
+                      type="search"
+                      placeholder="Search for products..."
+                      className="flex-1 mr-2"
+                      autoFocus
+                      value={searchValue}
+                      onChange={(e) => setSearchValue(e.target.value)}
+                      onFocus={() => setShowDropdown(!!searchResults.length)}
+                      onBlur={() =>
+                        setTimeout(() => setShowDropdown(false), 150)
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && searchValue) {
+                          if (router)
+                            router.push(
+                              `/products?search=${encodeURIComponent(
+                                searchValue
+                              )}`
+                            );
+                          setIsSearchOpen(false);
+                          setShowDropdown(false);
+                        }
+                      }}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setIsSearchOpen(false);
+                        setShowDropdown(false);
+                      }}
+                    >
+                      <X className="h-5 w-5" />
+                    </Button>
+                  </div>
+                  {showDropdown && searchResults.length > 0 && (
+                    <div
+                      className="absolute left-0 right-0 mt-2 bg-white border rounded shadow-lg max-h-80 overflow-y-auto"
+                      style={{ top: "100%", zIndex: 50 }}
+                    >
+                      {searchResults.map((product: any) => (
+                        <Link
+                          key={product.$id || product.id}
+                          href={`/products/${product.$id || product.id}`}
+                          className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 transition-colors"
+                          onClick={() => {
+                            setIsSearchOpen(false);
+                            setShowDropdown(false);
+                          }}
+                        >
+                          <Image
+                            src={product.images?.[0] || "/placeholder.svg"}
+                            alt={product.name}
+                            width={40}
+                            height={40}
+                            className="rounded object-cover border"
+                          />
+                          <span className="truncate font-medium">
+                            {product.name}
+                          </span>
+                        </Link>
+                      ))}
+                      <div className="border-t">
+                        <button
+                          className="w-full text-left px-4 py-2 text-primary hover:bg-gray-50 font-semibold"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            if (router)
+                              router.push(
+                                `/products?search=${encodeURIComponent(
+                                  searchValue
+                                )}`
+                              );
+                            setIsSearchOpen(false);
+                            setShowDropdown(false);
+                          }}
+                        >
+                          See all results for "{searchValue}"
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <Button

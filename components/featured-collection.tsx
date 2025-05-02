@@ -1,4 +1,6 @@
-import ProductCard from "@/components/product-card"
+import { useEffect, useState } from "react";
+import ProductCard from "@/components/product-card";
+import SkeletonProductCard from "@/components/skeleton-product-card";
 
 // Mock data for featured collection
 const featuredProducts = [
@@ -38,14 +40,33 @@ const featuredProducts = [
     rating: 4.9,
     reviewCount: 42,
   },
-]
+];
 
 export default function FeaturedCollection() {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        {Array(4)
+          .fill(0)
+          .map((_, i) => (
+            <SkeletonProductCard key={i} />
+          ))}
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
       {featuredProducts.map((product) => (
         <ProductCard key={product.id} {...product} />
       ))}
     </div>
-  )
+  );
 }

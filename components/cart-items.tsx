@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button"
 import QuantitySelector from "@/components/quantity-selector"
 import { useToast } from "@/components/ui/use-toast"
 import { motion, AnimatePresence } from "framer-motion"
+import { useShopItemActions, ShopItem } from "@/components/hooks/use-shop-item-actions"
 
 // Mock data for cart items
-const initialCartItems = [
+const initialCartItems: ShopItem[] = [
   {
     id: "1",
     name: "Premium Cotton T-Shirt",
@@ -41,16 +42,8 @@ const initialCartItems = [
 ]
 
 export default function CartItems() {
-  const [cartItems, setCartItems] = useState(initialCartItems)
-  const { toast } = useToast()
-
-  const removeItem = (id: string) => {
-    setCartItems((items) => items.filter((item) => item.id !== id))
-    toast({
-      title: "Item removed",
-      description: "The item has been removed from your cart.",
-    })
-  }
+  const [cartItems, setCartItems] = useState<ShopItem[]>(initialCartItems)
+  const { removeItem } = useShopItemActions(setCartItems, "cart")
 
   return (
     <div className="space-y-6">
