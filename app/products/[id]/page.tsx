@@ -215,30 +215,18 @@ export default function ProductPage() {
           <Tabs defaultValue="description" className="mb-16">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="details">Details & Care</TabsTrigger>
               <TabsTrigger value="reviews">Reviews</TabsTrigger>
             </TabsList>
             <TabsContent value="description" className="mt-6">
               <div className="prose max-w-none">
-                <p>{product.description || "No description available."}</p>
-              </div>
-            </TabsContent>
-            <TabsContent value="details" className="mt-6">
-              <div className="prose max-w-none">
-                <h3>Materials</h3>
-                <p>{product.materials || "-"}</p>
-                <h3>Care Instructions</h3>
-                <ul>
-                  {product.careInstructions ? (
-                    product.careInstructions
-                      .split("\n")
-                      .map((line: string, idx: number) => (
-                        <li key={idx}>{line}</li>
-                      ))
-                  ) : (
-                    <li>-</li>
-                  )}
-                </ul>
+                {product.description ? (
+                  <div
+                    className="rich-text-content"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  />
+                ) : (
+                  <p>No description available.</p>
+                )}
               </div>
             </TabsContent>
             <TabsContent value="reviews" className="mt-6">

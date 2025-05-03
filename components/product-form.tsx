@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { X, Upload, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import dbService from "@/appwrite/database";
 import ProductImageCarousel from "./product-image-carousel";
+import { Editor } from "@tinymce/tinymce-react";
 
 export interface Product {
   name: string;
@@ -83,6 +84,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isEdit, productId }) => {
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
+  const editorRef = useRef<any>(null);
 
   const { toast } = useToast();
   const router = useRouter();
@@ -431,14 +433,47 @@ const ProductForm: React.FC<ProductFormProps> = ({ isEdit, productId }) => {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    rows={4}
-                    placeholder="Enter product description"
-                    required
-                  />
+                  <div className="border rounded-md">
+                    <Editor
+                      id="description"
+                      apiKey="your-tinymce-api-key"
+                      onInit={(evt, editor) => (editorRef.current = editor)}
+                      initialValue={description}
+                      onEditorChange={(content) => setDescription(content)}
+                      init={{
+                        height: 300,
+                        menubar: false,
+                        plugins: [
+                          "advlist",
+                          "autolink",
+                          "lists",
+                          "link",
+                          "image",
+                          "charmap",
+                          "preview",
+                          "anchor",
+                          "searchreplace",
+                          "visualblocks",
+                          "code",
+                          "fullscreen",
+                          "insertdatetime",
+                          "media",
+                          "table",
+                          "code",
+                          "help",
+                          "wordcount",
+                        ],
+                        toolbar:
+                          "undo redo | blocks | " +
+                          "bold italic forecolor | alignleft aligncenter " +
+                          "alignright alignjustify | bullist numlist outdent indent | " +
+                          "removeformat | help",
+                        content_style:
+                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                        placeholder: "Enter product description",
+                      }}
+                    />
+                  </div>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="status">Product Status</Label>
@@ -862,9 +897,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ isEdit, productId }) => {
               />
               <div>
                 <h3 className="font-bold text-lg">{name || "Product Name"}</h3>
-                <p className="text-sm text-gray-500 mt-1 line-clamp-3">
-                  {description || "Product description will appear here"}
-                </p>
+                <div className="text-sm text-gray-500 mt-1 line-clamp-3">
+                  {description ? (
+                    <div
+                      className="rich-text-content"
+                      dangerouslySetInnerHTML={{ __html: description }}
+                    />
+                  ) : (
+                    <p>Product description will appear here</p>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
