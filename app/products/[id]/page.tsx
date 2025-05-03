@@ -15,12 +15,19 @@ import ProductImageCarousel from "@/components/product-image-carousel";
 import dbService from "@/appwrite/database";
 import { motion } from "framer-motion";
 import SkeletonProductDetail from "@/components/skeleton-product-detail";
+import { useCart } from "@/context/CartContext";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
+  const { toast } = useToast();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -30,6 +37,14 @@ export default function ProductPage() {
       try {
         const data = await dbService.getProductById(id);
         setProduct(data);
+        
+        // Set default selections when product loads
+        if (data.colors && data.colors.length > 0) {
+          setSelectedColor(typeof data.colors[0] === 'string' ? data.colors[0] : data.colors[0].id);
+        }
+        if (data.sizes && data.sizes.length > 0) {
+          setSelectedSize(typeof data.sizes[0] === 'string' ? data.sizes[0] : data.sizes[0].id);
+        }
       } catch (err) {
         setError("Product not found.");
       } finally {
@@ -38,6 +53,51 @@ export default function ProductPage() {
     };
     if (id) fetchProduct();
   }, [id]);
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    
+    // Validate selections if required
+    if (product.colors?.length > 0 && !selectedColor) {
+      toast({
+        title: "Please select a color",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (product.sizes?.length > 0 && !selectedSize) {
+      toast({
+        title: "Please select a size",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Add to cart with selected options
+    addToCart({
+      id: product.$id || product.id,
+      name: product.name,
+      price: product.price,
+      discount_price: product.discount_price,
+      image: product.images && product.images.length > 0 ? product.images[0] : "/placeholder.svg",
+      color: selectedColor || "Default",
+      size: selectedSize || "One Size",
+      quantity
+    });
+  };
+
+  const handleColorSelect = (colorId: string) => {
+    setSelectedColor(colorId);
+  };
+
+  const handleSizeSelect = (sizeId: string) => {
+    setSelectedSize(sizeId);
+  };
+
+  const handleQuantityChange = (newQuantity: number) => {
+    setQuantity(newQuantity);
+  };
 
   if (loading) return <SkeletonProductDetail />;
   if (error || !product)
@@ -134,6 +194,8 @@ export default function ProductPage() {
                   colors={product.colors.map((c: any) =>
                     typeof c === "string" ? { id: c } : c
                   )}
+                  onSelect={handleColorSelect}
+                  selectedColor={selectedColor}
                 />
               </div>
             )}
@@ -153,14 +215,31 @@ export default function ProductPage() {
                       ? { id: s, label: s.toUpperCase() }
                       : s
                   )}
+                  onSelect={handleSizeSelect}
+                  selectedSize={selectedSize}
                 />
               </div>
             )}
 
             {/* Quantity */}
-            <div className="mt-4">
+            <div className="mt-4">  
               <h3 className="text-sm font-medium mb-2">Quantity</h3>
-              <QuantitySelector />
+              <QuantitySelector 
+                initialValue={quantity} 
+                onChange={handleQuantityChange}
+                max={product.stock || 99} 
+              />
+            </div>
+
+            {/* Stock Status */}
+            <div className="mt-2">
+              {product.stock && product.stock > 0 ? (
+                <p className="text-sm text-green-600">
+                  In Stock: {product.stock} items available
+                </p>
+              ) : (
+                <p className="text-sm text-red-600">Out of Stock</p>
+              )}
             </div>
 
             {/* Add to Cart & Wishlist */}
@@ -170,7 +249,11 @@ export default function ProductPage() {
                 whileTap={{ scale: 0.97 }}
                 className="flex-1"
               >
-                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary-light">
+                <Button 
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary-light"
+                  onClick={handleAddToCart}
+                  disabled={!product.stock || product.stock <= 0}
+                >
                   Add to Cart
                 </Button>
               </motion.div>
@@ -213,7 +296,7 @@ export default function ProductPage() {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <Tabs defaultValue="description" className="mb-16">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="description">Description</TabsTrigger>
               <TabsTrigger value="reviews">Reviews</TabsTrigger>
             </TabsList>

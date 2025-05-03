@@ -7,6 +7,7 @@ export class DBService {
   databaseId = "680f58ff0022c60de3f1";
   productsCollectionId = "680f5ebe002589967ce1";
   categoriesCollectionId = "680f5ed400232721c3a9";
+  ordersCollectionId = "680f5ef5001ce239d55d";
   storageId = "680f59ea002f06770208";
 
   constructor() {
@@ -433,6 +434,59 @@ export class DBService {
       return this.storage.getFilePreview(this.storageId, fileId);
     } catch (error) {
       console.error("Error getting image:", error);
+      throw error;
+    }
+  }
+
+  async createOrder(orderData: any) {
+    try {
+      return await this.database.createDocument(
+        this.databaseId,
+        this.ordersCollectionId,
+        ID.unique(),
+        orderData
+      );
+    } catch (error) {
+      console.error("Error creating order:", error);
+      throw error;
+    }
+  }
+
+  async getOrderById(orderId: any) {
+    try {
+      return await this.database.getDocument(
+        this.databaseId,
+        this.ordersCollectionId,
+        orderId
+      );
+    } catch (error) {
+      console.error("Error fetching order:", error);
+      throw error;
+    }
+  }
+
+  async getAllOrders() {
+    try {
+      return await this.database.listDocuments(
+        this.databaseId,
+        this.ordersCollectionId
+      );
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      throw error;
+    }
+  }
+
+  async updateOrderStatus(orderId: any, status: any) {
+    try {
+      return await this.database.updateDocument(
+        this.databaseId,
+        this.ordersCollectionId,
+        orderId,
+        { status }
+      );
+    } catch (error) {
+      console.error("Error updating order status:", error);
       throw error;
     }
   }

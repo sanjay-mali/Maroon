@@ -10,6 +10,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/use-toast";
 import dbService from "@/appwrite/database";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCart } from "@/context/CartContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -19,6 +21,7 @@ export default function Navbar() {
   const [debouncedValue, setDebouncedValue] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const { itemCount } = useCart();
   const router =
     typeof window !== "undefined"
       ? require("next/navigation").useRouter()
@@ -304,10 +307,20 @@ export default function Navbar() {
             <Button variant="ghost" size="icon" asChild className="relative">
               <Link href="/cart">
                 <ShoppingBag className="h-5 w-5" />
-                <span className="absolute top-0 right-0 w-4 h-4 bg-primary text-white rounded-full text-[10px] flex items-center justify-center">
-                  3
-                </span>
-                <span className="sr-only">Cart</span>
+                <AnimatePresence>
+                  {itemCount > 0 && (
+                    <motion.span 
+                      className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white rounded-full text-[10px] flex items-center justify-center"
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      key="cart-count"
+                    >
+                      {itemCount > 99 ? '99+' : itemCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+                <span className="sr-only">Cart ({itemCount} items)</span>
               </Link>
             </Button>
             <Button

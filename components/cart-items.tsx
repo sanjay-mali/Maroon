@@ -1,56 +1,30 @@
 "use client"
 
-import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import QuantitySelector from "@/components/quantity-selector"
-import { useToast } from "@/components/ui/use-toast"
 import { motion, AnimatePresence } from "framer-motion"
-import { useShopItemActions, ShopItem } from "@/components/hooks/use-shop-item-actions"
-
-// Mock data for cart items
-const initialCartItems: ShopItem[] = [
-  {
-    id: "1",
-    name: "Premium Cotton T-Shirt",
-    price: 49.99,
-    image: "/placeholder.svg?height=200&width=200",
-    color: "Black",
-    size: "M",
-    quantity: 1,
-  },
-  {
-    id: "2",
-    name: "Slim Fit Jeans",
-    price: 79.99,
-    image: "/placeholder.svg?height=200&width=200",
-    color: "Blue",
-    size: "32",
-    quantity: 1,
-  },
-  {
-    id: "3",
-    name: "Casual Hoodie",
-    price: 59.99,
-    image: "/placeholder.svg?height=200&width=200",
-    color: "Gray",
-    size: "L",
-    quantity: 1,
-  },
-]
+import { useCart } from "@/context/CartContext"
 
 export default function CartItems() {
-  const [cartItems, setCartItems] = useState<ShopItem[]>(initialCartItems)
-  const { removeItem } = useShopItemActions(setCartItems, "cart")
+  const { cart, removeFromCart, updateQuantity } = useCart()
+
+  if (cart.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">Your cart is empty</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
       <AnimatePresence>
-        {cartItems.map((item) => (
+        {cart.map((item) => (
           <motion.div
-            key={item.id}
+            key={`${item.id}-${item.color}-${item.size}`}
             className="flex flex-col sm:flex-row gap-4 border-b pb-6"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -74,19 +48,31 @@ export default function CartItems() {
                     <span className="mx-2">|</span>
                     <span>Size: {item.size}</span>
                   </div>
-                  <div className="font-medium mt-1">${item.price.toFixed(2)}</div>
+                  <div className="font-medium mt-1">
+                    {item.discount_price ? (
+                      <div className="flex items-center gap-2">
+                        <span>₹{item.discount_price.toFixed(2)}</span>
+                        <span className="text-sm text-gray-500 line-through">₹{item.price.toFixed(2)}</span>
+                      </div>
+                    ) : (
+                      <span>₹{item.price.toFixed(2)}</span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-col sm:items-end gap-2 mt-4 sm:mt-0">
                   <div className="w-32">
-                    <QuantitySelector />
+                    <QuantitySelector 
+                      controlledValue={item.quantity}
+                      onChange={(quantity) => updateQuantity(item.id, quantity)}
+                    />
                   </div>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => removeFromCart(item.id)}
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
                       <span>Remove</span>

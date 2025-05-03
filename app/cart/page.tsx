@@ -1,23 +1,23 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import CartItems from "@/components/cart-items"
 import CartSummary from "@/components/cart-summary"
 import EmptyCart from "@/components/empty-cart"
 import SkeletonCartItem from "@/components/skeleton-cart-item"
 import { Skeleton } from "@/components/ui/skeleton"
 import { motion } from "framer-motion"
+import { useCart } from "@/context/CartContext"
 
 export default function CartPage() {
   const [isLoading, setIsLoading] = useState(true)
-  // For demo purposes, let's assume we have items in the cart
-  const hasItems = true
-
+  const { cart } = useCart()
+  
   useEffect(() => {
-    // Simulate loading data
+    // Just a small delay to ensure the UI feels smooth
     const timer = setTimeout(() => {
       setIsLoading(false)
-    }, 1500)
+    }, 500)
 
     return () => clearTimeout(timer)
   }, [])
@@ -67,7 +67,7 @@ export default function CartPage() {
               </div>
             </div>
           </div>
-        ) : hasItems ? (
+        ) : cart.length > 0 ? (
           <motion.div
             className="grid lg:grid-cols-3 gap-8"
             initial={{ opacity: 0, y: 20 }}

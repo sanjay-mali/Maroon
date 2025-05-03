@@ -1,14 +1,32 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 
 interface SizeSelectorProps {
-  sizes: { id: string; label?: string }[]
+  sizes: { id: string; label?: string }[];
+  onSelect?: (sizeId: string) => void;
+  selectedSize?: string;
 }
 
-export default function SizeSelector({ sizes = [] }: SizeSelectorProps) {
-  const [selectedSize, setSelectedSize] = useState(sizes[0]?.id || "")
+export default function SizeSelector({ 
+  sizes = [], 
+  onSelect,
+  selectedSize: externalSelectedSize 
+}: SizeSelectorProps) {
+  const [selectedSize, setSelectedSize] = useState(externalSelectedSize || sizes[0]?.id || "")
+  
+  // Sync with external selected size if provided
+  useEffect(() => {
+    if (externalSelectedSize !== undefined) {
+      setSelectedSize(externalSelectedSize);
+    }
+  }, [externalSelectedSize]);
+
+  const handleSizeSelect = (sizeId: string) => {
+    setSelectedSize(sizeId);
+    onSelect?.(sizeId);
+  };
 
   if (!sizes.length) return null
 
@@ -22,7 +40,7 @@ export default function SizeSelector({ sizes = [] }: SizeSelectorProps) {
               ? "bg-black text-white border-black"
               : "bg-white text-black border-gray-300 hover:border-gray-400"
           }`}
-          onClick={() => setSelectedSize(size.id)}
+          onClick={() => handleSizeSelect(size.id)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           transition={{ duration: 0.2 }}

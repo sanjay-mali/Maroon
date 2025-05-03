@@ -9,6 +9,7 @@ import { Heart, ShoppingBag, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
+import { useCart } from "@/context/CartContext";
 
 interface ProductCardProps {
   id: string;
@@ -46,10 +47,27 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const { toast } = useToast();
+  const { addToCart } = useCart();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Add first size and color as default when quick adding from product card
+    const defaultSize = "M";
+    const defaultColor = "Default";
+
+    addToCart({
+      id,
+      name,
+      price,
+      discount_price,
+      image: images && images.length > 0 ? images[0] : "/placeholder.svg",
+      color: defaultColor,
+      size: defaultSize,
+      quantity: 1,
+    });
+
     toast({
       title: "Added to cart",
       description: `${name} has been added to your cart.`,

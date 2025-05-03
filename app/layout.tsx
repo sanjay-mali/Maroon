@@ -5,6 +5,7 @@ import "./globals.css";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { Toaster } from "@/components/ui/toaster";
+import { CartProvider } from "@/context/CartContext";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -45,7 +46,6 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  generator: "v0.dev",
 };
 
 export default function RootLayout({
@@ -54,12 +54,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="light" style={{ colorScheme: "light" }}>
       <body className={`${playfair.variable} ${poppins.variable} font-poppins`}>
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
-        <Toaster />
+        <CartProvider>
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+          <Toaster />
+        </CartProvider>
       </body>
     </html>
   );

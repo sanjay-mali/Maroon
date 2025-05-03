@@ -1,14 +1,32 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 
 interface ColorSelectorProps {
-  colors: { id: string; name?: string; value?: string }[]
+  colors: { id: string; name?: string; value?: string }[];
+  onSelect?: (colorId: string) => void;
+  selectedColor?: string;
 }
 
-export default function ColorSelector({ colors = [] }: ColorSelectorProps) {
-  const [selectedColor, setSelectedColor] = useState(colors[0]?.id || "")
+export default function ColorSelector({ 
+  colors = [],
+  onSelect,
+  selectedColor: externalSelectedColor
+}: ColorSelectorProps) {
+  const [selectedColor, setSelectedColor] = useState(externalSelectedColor || colors[0]?.id || "")
+  
+  // Sync with external selected color if provided
+  useEffect(() => {
+    if (externalSelectedColor !== undefined) {
+      setSelectedColor(externalSelectedColor);
+    }
+  }, [externalSelectedColor]);
+
+  const handleColorSelect = (colorId: string) => {
+    setSelectedColor(colorId);
+    onSelect?.(colorId);
+  };
 
   if (!colors.length) return null
 
@@ -21,7 +39,7 @@ export default function ColorSelector({ colors = [] }: ColorSelectorProps) {
             selectedColor === color.id ? "ring-2 ring-offset-2 ring-black" : ""
           }`}
           style={{ backgroundColor: color.value || color.id }}
-          onClick={() => setSelectedColor(color.id)}
+          onClick={() => handleColorSelect(color.id)}
           aria-label={`Select ${color.name || color.id} color`}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}

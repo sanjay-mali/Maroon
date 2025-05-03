@@ -54,6 +54,7 @@
     "next-auth": "latest",
     "next-themes": "latest",
     "nodemailer": "latest",
+    "razorpay": "^2.9.6",
     "react": "^19",
     "react-day-picker": "8.10.1",
     "react-dom": "^19",
