@@ -40,6 +40,39 @@ export default function AdminOrdersPage() {
   const { toast } = useToast();
   const router = useRouter();
 
+  // Parse JSON strings in order data to objects
+  const parseOrderData = (orderData: any) => {
+    try {
+      // Create a copy of the order data
+      const parsedOrder = { ...orderData };
+      
+      // Parse items JSON string if it exists
+      if (parsedOrder.itemsJson) {
+        parsedOrder.items = JSON.parse(parsedOrder.itemsJson);
+      }
+      
+      // Parse shipping address JSON string if it exists
+      if (parsedOrder.shippingAddressJson) {
+        parsedOrder.shippingAddress = JSON.parse(parsedOrder.shippingAddressJson);
+      }
+      
+      // Parse payment details JSON string if it exists
+      if (parsedOrder.paymentDetailsJson) {
+        parsedOrder.paymentDetails = JSON.parse(parsedOrder.paymentDetailsJson);
+      }
+      
+      // Parse amount JSON string if it exists
+      if (parsedOrder.amountJson) {
+        parsedOrder.amount = JSON.parse(parsedOrder.amountJson);
+      }
+      
+      return parsedOrder;
+    } catch (error) {
+      console.error("Error parsing order data:", error);
+      return orderData; // Return original data on error
+    }
+  };
+
   // Fetch all orders
   useEffect(() => {
     async function fetchOrders() {
@@ -47,10 +80,12 @@ export default function AdminOrdersPage() {
         setIsLoading(true);
         const response = await dbService.getAllOrders();
         
-        // Sort orders by creation date (newest first)
-        const sortedOrders = response.documents.sort((a: any, b: any) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
+        // Parse and sort orders by creation date (newest first)
+        const sortedOrders = response.documents
+          .map(parseOrderData)
+          .sort((a: any, b: any) => 
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         
         setOrders(sortedOrders);
       } catch (error) {

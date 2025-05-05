@@ -17,6 +17,41 @@ export default function SuccessPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
+  // Parse order data from JSON strings
+  const parseOrderData = (orderData: any) => {
+    try {
+      // Create a copy of the order data to modify
+      const parsedOrder = { ...orderData };
+
+      // Parse items JSON string if it exists
+      if (parsedOrder.itemsJson) {
+        parsedOrder.items = JSON.parse(parsedOrder.itemsJson);
+      }
+
+      // Parse shipping address JSON string if it exists
+      if (parsedOrder.shippingAddressJson) {
+        parsedOrder.shippingAddress = JSON.parse(
+          parsedOrder.shippingAddressJson
+        );
+      }
+
+      // Parse payment details JSON string if it exists
+      if (parsedOrder.paymentDetailsJson) {
+        parsedOrder.paymentDetails = JSON.parse(parsedOrder.paymentDetailsJson);
+      }
+
+      // Parse amount JSON string if it exists
+      if (parsedOrder.amountJson) {
+        parsedOrder.amount = JSON.parse(parsedOrder.amountJson);
+      }
+
+      return parsedOrder;
+    } catch (error) {
+      console.error("Error parsing order data:", error);
+      return orderData; // Return original data on error
+    }
+  };
+
   useEffect(() => {
     const fetchOrder = async () => {
       if (!orderId) {
@@ -26,7 +61,9 @@ export default function SuccessPage() {
 
       try {
         const orderData = await dbService.getOrderById(orderId);
-        setOrder(orderData);
+        // Parse the JSON strings in the order data
+        const parsedOrderData = parseOrderData(orderData);
+        setOrder(parsedOrderData);
       } catch (error) {
         console.error("Error fetching order details:", error);
         toast({
@@ -59,7 +96,7 @@ export default function SuccessPage() {
     const orderDate = new Date(dateString);
     const deliveryDate = new Date(orderDate);
     deliveryDate.setDate(orderDate.getDate() + 5);
-    
+
     const options: Intl.DateTimeFormatOptions = {
       year: "numeric",
       month: "long",
@@ -78,7 +115,7 @@ export default function SuccessPage() {
               <Skeleton className="h-8 w-64 mb-2" />
               <Skeleton className="h-5 w-48" />
             </div>
-            
+
             <div className="space-y-4 mb-8">
               <Skeleton className="h-6 w-48" />
               <div className="flex justify-between">
@@ -94,7 +131,7 @@ export default function SuccessPage() {
                 <Skeleton className="h-5 w-32" />
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <Skeleton className="h-6 w-48" />
               {[1, 2].map((i) => (
@@ -113,14 +150,15 @@ export default function SuccessPage() {
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
             <h1 className="text-2xl font-bold mb-4">Order Not Found</h1>
             <p className="text-gray-600 mb-6">
-              We couldn't find any order with the provided ID. Please check your order history or contact customer support.
+              We couldn't find any order with the provided ID. Please check your
+              order history or contact customer support.
             </p>
             <Button asChild>
               <Link href="/products">Continue Shopping</Link>
             </Button>
           </div>
         ) : (
-          <motion.div 
+          <motion.div
             className="bg-white rounded-lg shadow-sm p-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -133,7 +171,7 @@ export default function SuccessPage() {
               <h1 className="text-2xl font-bold mb-1">Order Confirmed!</h1>
               <p className="text-gray-600">Thank you for your purchase</p>
             </div>
-            
+
             <div className="space-y-6 mb-8">
               <div className="border-b pb-4">
                 <h2 className="font-semibold mb-2">Order Information</h2>
@@ -151,65 +189,86 @@ export default function SuccessPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Total Amount:</span>
-                  <span className="font-medium">₹{order.amount.total.toFixed(2)}</span>
+                  <span className="font-medium">
+                    ₹{order.amount.total.toFixed(2)}
+                  </span>
                 </div>
               </div>
-              
+
               <div className="border-b pb-4">
                 <h2 className="font-semibold mb-2">Shipping Information</h2>
                 <p className="text-sm">
-                  {order.shippingAddress.fullName}<br />
-                  {order.shippingAddress.addressLine1}<br />
-                  {order.shippingAddress.addressLine2 && <>{order.shippingAddress.addressLine2}<br /></>}
-                  {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.postalCode}<br />
-                  {order.shippingAddress.country}<br />
+                  {order.shippingAddress.fullName}
+                  <br />
+                  {order.shippingAddress.addressLine1}
+                  <br />
+                  {order.shippingAddress.addressLine2 && (
+                    <>
+                      {order.shippingAddress.addressLine2}
+                      <br />
+                    </>
+                  )}
+                  {order.shippingAddress.city}, {order.shippingAddress.state}{" "}
+                  {order.shippingAddress.postalCode}
+                  <br />
+                  {order.shippingAddress.country}
+                  <br />
                   {order.shippingAddress.phone}
                 </p>
-                
+
                 <div className="mt-4 bg-blue-50 p-4 rounded-md">
                   <div className="flex items-start">
                     <Truck className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-blue-800">Estimated Delivery</p>
-                      <p className="text-sm text-blue-600">{getEstimatedDelivery(order.createdAt)}</p>
+                      <p className="text-sm font-medium text-blue-800">
+                        Estimated Delivery
+                      </p>
+                      <p className="text-sm text-blue-600">
+                        {getEstimatedDelivery(order.createdAt)}
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <h2 className="font-semibold mb-4">Order Summary</h2>
                 <div className="space-y-4">
-                  {order.items.map((item: any, index: number) => (
-                    <div key={index} className="flex gap-4 py-4 border-b">
-                      <div className="w-20 h-20 relative rounded bg-gray-100 overflow-hidden">
-                        {item.image && (
-                          <img 
-                            src={item.image} 
-                            alt={item.name} 
-                            className="object-cover w-full h-full"
-                          />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium">{item.name}</h3>
-                        <div className="flex gap-4 text-sm text-gray-600 mt-1">
-                          {item.color && <span>Color: {item.color}</span>}
-                          {item.size && <span>Size: {item.size}</span>}
+                  {order.items &&
+                    order.items.map((item: any, index: number) => (
+                      <div key={index} className="flex gap-4 py-4 border-b">
+                        <div className="w-20 h-20 relative rounded bg-gray-100 overflow-hidden">
+                          {item.image && (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="object-cover w-full h-full"
+                            />
+                          )}
                         </div>
-                        <div className="flex justify-between mt-2">
-                          <span className="text-sm text-gray-600">
-                            Qty: {item.quantity}
-                          </span>
-                          <span className="font-medium">
-                            ₹{((item.discount_price || item.price) * item.quantity).toFixed(2)}
-                          </span>
+                        <div className="flex-1">
+                          <h3 className="font-medium">{item.name}</h3>
+                          <div className="flex gap-4 text-sm text-gray-600 mt-1">
+                            {item.color && <span>Color: {item.color}</span>}
+                            {item.size && <span>Size: {item.size}</span>}
+                          </div>
+                          <div className="flex justify-between mt-2">
+                            <span className="text-sm text-gray-600">
+                              Qty: {item.quantity}
+                            </span>
+                            <span className="font-medium">
+                              ₹
+                              {(
+                                (item.discount_price || item.price) *
+                                item.quantity
+                              ).toFixed(2)}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
-                
+
                 <div className="mt-6 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal:</span>
@@ -217,7 +276,11 @@ export default function SuccessPage() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Shipping:</span>
-                    <span>{order.amount.shipping === 0 ? "Free" : `₹${order.amount.shipping.toFixed(2)}`}</span>
+                    <span>
+                      {order.amount.shipping === 0
+                        ? "Free"
+                        : `₹${order.amount.shipping.toFixed(2)}`}
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Tax:</span>
@@ -230,7 +293,7 @@ export default function SuccessPage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-4 justify-center">
               <Button asChild>
                 <Link href="/products">
@@ -238,9 +301,9 @@ export default function SuccessPage() {
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
-              
+
               <Button variant="outline" asChild>
-                <Link href={`/${order.userId ? 'account/orders' : ''}`}>
+                <Link href={`/${order.userId ? "account/orders" : ""}`}>
                   <Package className="mr-1 h-4 w-4" />
                   {order.userId ? "View Orders" : "Track Order"}
                 </Link>

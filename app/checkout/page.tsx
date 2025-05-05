@@ -51,42 +51,63 @@ export default function CheckoutPage() {
       const user = authStatus ? await authService.getCurrentUser() : null;
       const userId = user ? user.$id : null;
       
-      // Create order data
+      // Prepare items data - convert to JSON string to avoid nested array issues with Appwrite
+      const itemsData = JSON.stringify(cart.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        discount_price: item.discount_price,
+        quantity: item.quantity,
+        color: item.color,
+        size: item.size,
+        image: item.image,
+      })));
+
+      // Convert shipping address to JSON string
+      const shippingAddressData = JSON.stringify({
+        fullName: shippingAddress.fullName,
+        email: shippingAddress.email,
+        phone: shippingAddress.phone,
+        addressLine1: shippingAddress.addressLine1,
+        addressLine2: shippingAddress.addressLine2,
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        postalCode: shippingAddress.postalCode,
+        country: shippingAddress.country,
+      });
+
+      // Convert payment details to JSON string
+      const paymentDetailsData = JSON.stringify({
+        paymentId: paymentData.razorpay_payment_id,
+        orderId: paymentData.razorpay_order_id,
+        signature: paymentData.razorpay_signature,
+        method: "razorpay",
+      });
+
+      // Calculate amount details
+      const subtotal = cart.reduce(
+        (sum, item) => sum + (item.discount_price || item.price) * item.quantity,
+        0
+      );
+      const shipping = 0;
+      const tax = total * 0.18;
+
+      // Convert amount to JSON string
+      const amountData = JSON.stringify({
+        subtotal,
+        shipping,
+        tax,
+        total,
+      });
+      
+      // Create order data with all nested objects as JSON strings
       const orderData = {
         userId: userId,
-        items: cart.map(item => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          discount_price: item.discount_price,
-          quantity: item.quantity,
-          color: item.color,
-          size: item.size,
-          image: item.image,
-        })),
-        shippingAddress: {
-          fullName: shippingAddress.fullName,
-          email: shippingAddress.email,
-          phone: shippingAddress.phone,
-          addressLine1: shippingAddress.addressLine1,
-          addressLine2: shippingAddress.addressLine2,
-          city: shippingAddress.city,
-          state: shippingAddress.state,
-          postalCode: shippingAddress.postalCode,
-          country: shippingAddress.country,
-        },
-        paymentDetails: {
-          paymentId: paymentData.razorpay_payment_id,
-          orderId: paymentData.razorpay_order_id,
-          signature: paymentData.razorpay_signature,
-          method: "razorpay",
-        },
-        amount: {
-          subtotal: cart.reduce((sum, item) => sum + (item.discount_price || item.price) * item.quantity, 0),
-          shipping: 0, 
-          tax: total * 0.18,
-          total: total,
-        },
+        itemsJson: itemsData,
+        itemsCount: cart.length,
+        shippingAddressJson: shippingAddressData,
+        paymentDetailsJson: paymentDetailsData,
+        amountJson: amountData,
         status: "Processing",
         createdAt: new Date().toISOString(),
       };
