@@ -63,16 +63,22 @@ export const downloadExcel = (data: any[], filename: string): void => {
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
-  const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
 
-  downloadData(
-    new Uint8Array(excelBuffer).reduce(
-      (data, byte) => data + String.fromCharCode(byte),
-      ""
-    ),
-    `${filename}.xlsx`,
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  );
+  // Write the workbook directly as a blob for proper binary handling
+  const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+  const blob = new Blob([new Uint8Array(excelBuffer)], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  // Create download link
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${filename}.xlsx`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };
 
 // Prepare sales report data from chart data and orders
