@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useToast } from "./ui/use-toast";
-import { createAccount } from "@/lib/appwrite";
 import { useAuth } from "@/hooks/useAuth";
 import authService from "@/appwrite/authService";
 
@@ -16,7 +15,6 @@ export default function UserRegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
-  const { setAuthStatus } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -31,7 +29,6 @@ export default function UserRegisterForm() {
       });
 
       if (userData) {
-        setAuthStatus(true);
         toast({
           title: "Success",
           description: "Account created successfully.",
