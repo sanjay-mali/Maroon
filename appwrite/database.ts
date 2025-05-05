@@ -8,6 +8,7 @@ export class DBService {
   productsCollectionId = "680f5ebe002589967ce1";
   categoriesCollectionId = "680f5ed400232721c3a9";
   ordersCollectionId = "680f5ef5001ce239d55d";
+  usersCollectionId = "680f5ee500152b699ab8";
   storageId = "680f59ea002f06770208";
 
   constructor() {
@@ -488,6 +489,282 @@ export class DBService {
     } catch (error) {
       console.error("Error updating order status:", error);
       throw error;
+    }
+  }
+
+  // User Management
+  async createUser(userData: {
+    userId: string;
+    name: string;
+    email: string;
+    isActive?: boolean;
+    role?: "customer" | "admin";
+  }) {
+    try {
+      return await this.database.createDocument(
+        this.databaseId,
+        this.usersCollectionId,
+        userData.userId,
+        {
+          name: userData.name,
+          email: userData.email,
+          isActive: userData.isActive !== undefined ? userData.isActive : true,
+          role: userData.role || "customer",
+          wishlist: [],
+          addresses: [],
+          reviews: [],
+          orders: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+      );
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw error;
+    }
+  }
+
+  async getAllUsers(page = 1, limit = 20) {
+    try {
+      return await this.database.listDocuments(
+        this.databaseId,
+        this.usersCollectionId,
+        [Query.limit(limit), Query.offset((page - 1) * limit)]
+      );
+    } catch (error) {
+      console.error("Error getting all users:", error);
+      throw error;
+    }
+  }
+
+  async getUserById(userId: string) {
+    try {
+      return await this.database.getDocument(
+        this.databaseId,
+        this.usersCollectionId,
+        userId
+      );
+    } catch (error) {
+      console.error("Error getting user by ID:", error);
+      throw error;
+    }
+  }
+
+  async updateUser(
+    userId: string,
+    userData: Partial<{
+      name: string;
+      email: string;
+      phone: string;
+      avatar: string;
+      isActive: boolean;
+      role: "customer" | "admin";
+    }>
+  ) {
+    try {
+      const data = {
+        ...userData,
+        updatedAt: new Date().toISOString(),
+      };
+
+      return await this.database.updateDocument(
+        this.databaseId,
+        this.usersCollectionId,
+        userId,
+        data
+      );
+    } catch (error) {
+      console.error("Error updating user:", error);
+      throw error;
+    }
+  }
+
+  async deleteUser(userId: string) {
+    try {
+      return await this.database.deleteDocument(
+        this.databaseId,
+        this.usersCollectionId,
+        userId
+      );
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      throw error;
+    }
+  }
+
+  async blockUser(userId: string) {
+    try {
+      return await this.updateUser(userId, { isActive: false });
+    } catch (error) {
+      console.error("Error blocking user:", error);
+      throw error;
+    }
+  }
+
+  async unblockUser(userId: string) {
+    try {
+      return await this.updateUser(userId, { isActive: true });
+    } catch (error) {
+      console.error("Error unblocking user:", error);
+      throw error;
+    }
+  }
+
+  // User Address Management
+  async addUserAddress(
+    userId: string,
+    addressData: {
+      fullName: string;
+      addressLine1: string;
+      addressLine2?: string;
+      city: string;
+      state: string;
+      postalCode: string;
+      country: string;
+      phone: string;
+      isDefault?: boolean;
+    }
+  ) {
+    try {
+      const user = await this.getUserById(userId);
+      const addresses = user.addresses || [];
+
+      // Create a new address with ID
+      const newAddress = {
+        id: ID.unique(),
+        ...addressData,
+        isDefault:
+          addressData.isDefault !== undefined
+            ? addressData.isDefault
+            : addresses.length === 0,
+        createdAt: new Date().toISOString(),
+      };
+
+      // If this is the default address, make other addresses non-default
+      if (newAddress.isDefault) {
+        addresses.forEach((addr) => {
+          const parsedAddr = typeof addr === "string" ? JSON.parse(addr) : addr;
+          parsedAddr.isDefault = false;
+          return JSON.stringify(parsedAddr);
+        });
+      }
+
+      // Add the new address as a JSON string
+      addresses.push(JSON.stringify(newAddress));
+
+      // Update the user document
+      return await this.database.updateDocument(
+        this.databaseId,
+        this.usersCollectionId,
+        userId,
+        {
+          addresses,
+          updatedAt: new Date().toISOString(),
+        }
+      );
+    } catch (error) {
+      console.error("Error adding user address:", error);
+      throw error;
+    }
+  }
+
+  async getUserAddresses(userId: string) {
+    try {
+      const user = await this.getUserById(userId);
+      return user.addresses || [];
+    } catch (error) {
+      console.error("Error getting user addresses:", error);
+      throw error;
+    }
+  }
+
+  // User Wishlist Management
+  async addToWishlist(userId: string, productId: string) {
+    try {
+      const user = await this.getUserById(userId);
+      let wishlist = user.wishlist || [];
+
+      // Only add if not already in wishlist
+      if (!wishlist.includes(productId)) {
+        wishlist.push(productId);
+
+        return await this.database.updateDocument(
+          this.databaseId,
+          this.usersCollectionId,
+          userId,
+          {
+            wishlist,
+            updatedAt: new Date().toISOString(),
+          }
+        );
+      }
+
+      return user;
+    } catch (error) {
+      console.error("Error adding to wishlist:", error);
+      throw error;
+    }
+  }
+
+  async removeFromWishlist(userId: string, productId: string) {
+    try {
+      const user = await this.getUserById(userId);
+      const wishlist = (user.wishlist || []).filter((id) => id !== productId);
+
+      return await this.database.updateDocument(
+        this.databaseId,
+        this.usersCollectionId,
+        userId,
+        {
+          wishlist,
+          updatedAt: new Date().toISOString(),
+        }
+      );
+    } catch (error) {
+      console.error("Error removing from wishlist:", error);
+      throw error;
+    }
+  }
+
+  async getWishlist(userId: string) {
+    try {
+      const user = await this.getUserById(userId);
+      return user.wishlist || [];
+    } catch (error) {
+      console.error("Error getting wishlist:", error);
+      throw error;
+    }
+  }
+
+  // User order tracking
+  async addOrderToUserHistory(userId: string, orderId: string) {
+    try {
+      const user = await this.getUserById(userId);
+      const orders = user.orders || [];
+      orders.push(orderId);
+
+      return await this.database.updateDocument(
+        this.databaseId,
+        this.usersCollectionId,
+        userId,
+        {
+          orders,
+          updatedAt: new Date().toISOString(),
+        }
+      );
+    } catch (error) {
+      console.error("Error adding order to user history:", error);
+      throw error;
+    }
+  }
+
+  async getUserOrderCount(userId: string) {
+    try {
+      const user = await this.getUserById(userId);
+      return (user.orders || []).length;
+    } catch (error) {
+      console.error("Error getting user order count:", error);
+      return 0;
     }
   }
 }

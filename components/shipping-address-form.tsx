@@ -22,6 +22,8 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth } from "@/hooks/useAuth";
 
 // Define the form schema with validation
 const addressSchema = z.object({
@@ -51,6 +53,7 @@ export default function ShippingAddressForm({
   isLoading = false,
 }: ShippingAddressFormProps) {
   const [saveAddress, setSaveAddress] = useState(defaultValues?.saveAddress || false);
+  const { authStatus } = useAuth();
 
   // Initialize the form with default values
   const form = useForm<AddressFormValues>({
@@ -260,28 +263,29 @@ export default function ShippingAddressForm({
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="saveAddress"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-2">
-                <FormControl>
-                  <input
-                    type="checkbox"
-                    checked={field.value}
-                    onChange={(e) => {
-                      field.onChange(e.target.checked);
-                      setSaveAddress(e.target.checked);
-                    }}
-                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                </FormControl>
-                <FormLabel className="font-normal text-sm text-muted-foreground">
-                  Save this address for future orders
-                </FormLabel>
-              </FormItem>
-            )}
-          />
+          {/* Only show save address option for logged in users */}
+          {authStatus && (
+            <FormField
+              control={form.control}
+              name="saveAddress"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-2">
+                  <FormControl>
+                    <Checkbox 
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      id="saveAddress"
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel htmlFor="saveAddress">
+                      Save this address for future orders
+                    </FormLabel>
+                  </div>
+                </FormItem>
+              )}
+            />
+          )}
 
           <Button 
             type="submit" 

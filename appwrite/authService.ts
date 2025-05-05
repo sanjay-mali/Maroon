@@ -1,4 +1,5 @@
 import { Client, Account, ID } from "appwrite";
+import dbService from "./database";
 
 export class AuthService {
   client = new Client();
@@ -22,6 +23,7 @@ export class AuthService {
     name: string;
   }) {
     try {
+      // Create user in Auth service
       const userAccount = await this.account.create(
         ID.unique(),
         email,
@@ -30,7 +32,14 @@ export class AuthService {
       );
 
       if (userAccount) {
-        return this.Login({ email, password });
+        await dbService.createUser({
+          userId: userAccount.$id,
+          name: name,
+          email: email,
+          isActive: true,
+          role: "customer",
+        });
+        return userAccount;
       } else {
         return userAccount;
       }
