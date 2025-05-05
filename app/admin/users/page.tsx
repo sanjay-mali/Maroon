@@ -1,11 +1,26 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Search, ArrowUpDown, MoreHorizontal, Eye, Ban, CheckCircle, XCircle, Mail } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import {
+  Search,
+  ArrowUpDown,
+  MoreHorizontal,
+  Eye,
+  Ban,
+  CheckCircle,
+  XCircle,
+  Mail,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,133 +28,162 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useToast } from "@/components/ui/use-toast"
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/components/ui/use-toast";
+import dbService from "@/appwrite/database";
+import { UserData } from "@/types/user";
 
-// Dummy data for users
-const users = [
-  {
-    id: "1",
-    name: "Priya Sharma",
-    email: "priya.sharma@example.com",
-    status: "active",
-    role: "customer",
-    orders: 8,
-    lastActive: "2023-04-28",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "2",
-    name: "Ananya Patel",
-    email: "ananya.patel@example.com",
-    status: "active",
-    role: "customer",
-    orders: 3,
-    lastActive: "2023-04-27",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "3",
-    name: "Neha Gupta",
-    email: "neha.gupta@example.com",
-    status: "active",
-    role: "customer",
-    orders: 12,
-    lastActive: "2023-04-28",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "4",
-    name: "Kavita Singh",
-    email: "kavita.singh@example.com",
-    status: "blocked",
-    role: "customer",
-    orders: 0,
-    lastActive: "2023-04-15",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "5",
-    name: "Meera Reddy",
-    email: "meera.reddy@example.com",
-    status: "active",
-    role: "customer",
-    orders: 5,
-    lastActive: "2023-04-26",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "6",
-    name: "Ritu Desai",
-    email: "ritu.desai@example.com",
-    status: "active",
-    role: "customer",
-    orders: 2,
-    lastActive: "2023-04-25",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "7",
-    name: "Anjali Mehta",
-    email: "anjali.mehta@example.com",
-    status: "blocked",
-    role: "customer",
-    orders: 1,
-    lastActive: "2023-04-10",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "8",
-    name: "Divya Joshi",
-    email: "divya.joshi@example.com",
-    status: "active",
-    role: "admin",
-    orders: 0,
-    lastActive: "2023-04-28",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-]
+interface DisplayUser {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+  role: string;
+  orders: number;
+  avatar?: string;
+}
 
 export default function UsersPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [roleFilter, setRoleFilter] = useState("all")
-  const { toast } = useToast()
+  const [users, setUsers] = useState<DisplayUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [pageLimit] = useState(10);
+
+  const { toast } = useToast();
+
+  // Fetch users from Appwrite
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        setLoading(true);
+        const response = await dbService.getAllUsers(currentPage, pageLimit);
+
+        if (response && response.documents) {
+          const appwriteUsers = response.documents.map(
+            (user: any): DisplayUser => {
+              return {
+                id: user.$id,
+                name: user.name || "Unknown",
+                email: user.email || "",
+                status: user.isActive ? "active" : "blocked",
+                role: user.role || "customer",
+                orders: (user.orders || []).length,
+                avatar: user.avatar || "/placeholder.svg",
+              };
+            }
+          );
+
+          setUsers(appwriteUsers);
+          setTotalUsers(response.total);
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast({
+          variant: "destructive",
+          title: "Error fetching users",
+          description: "There was a problem loading the user data.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUsers();
+  }, [currentPage, toast]);
 
   // Filter users based on search query and filters
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter
-    const matchesRole = roleFilter === "all" || user.role === roleFilter
-    return matchesSearch && matchesStatus && matchesRole
-  })
+      user.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || user.status === statusFilter;
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    return matchesSearch && matchesStatus && matchesRole;
+  });
 
-  const handleBlockUser = (userId: string) => {
-    toast({
-      title: "User blocked",
-      description: "The user has been blocked successfully.",
-    })
-  }
+  const handleBlockUser = async (userId: string) => {
+    try {
+      await dbService.blockUser(userId);
+      // Update local state
+      setUsers(
+        users.map((user) =>
+          user.id === userId ? { ...user, status: "blocked" } : user
+        )
+      );
+      toast({
+        title: "User blocked",
+        description: "The user has been blocked successfully.",
+      });
+    } catch (error) {
+      console.error("Error blocking user:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to block user. Please try again.",
+      });
+    }
+  };
 
-  const handleUnblockUser = (userId: string) => {
-    toast({
-      title: "User unblocked",
-      description: "The user has been unblocked successfully.",
-    })
-  }
+  const handleUnblockUser = async (userId: string) => {
+    try {
+      await dbService.unblockUser(userId);
+      // Update local state
+      setUsers(
+        users.map((user) =>
+          user.id === userId ? { ...user, status: "active" } : user
+        )
+      );
+      toast({
+        title: "User unblocked",
+        description: "The user has been unblocked successfully.",
+      });
+    } catch (error) {
+      console.error("Error unblocking user:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to unblock user. Please try again.",
+      });
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    const maxPages = Math.ceil(totalUsers / pageLimit);
+    if (currentPage < maxPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h1 className="text-2xl md:text-3xl font-bold">Users</h1>
-      </div>
-
       <Card>
         <CardHeader className="pb-3">
           <CardTitle>User Management</CardTitle>
@@ -204,9 +248,18 @@ export default function UsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.length === 0 ? (
+                {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <TableCell colSpan={6} className="text-center py-8">
+                      Loading users...
+                    </TableCell>
+                  </TableRow>
+                ) : filteredUsers.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="text-center py-8 text-gray-500 dark:text-gray-400"
+                    >
                       No users found. Try adjusting your search or filters.
                     </TableCell>
                   </TableRow>
@@ -216,35 +269,52 @@ export default function UsersPage() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar>
-                            <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            <AvatarImage
+                              src={user.avatar || "/placeholder.svg"}
+                              alt={user.name}
+                            />
+                            <AvatarFallback>
+                              {user.name.charAt(0)}
+                            </AvatarFallback>
                           </Avatar>
                           <div>
                             <div className="font-medium">{user.name}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {user.email}
+                            </div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         {user.status === "active" ? (
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          <Badge
+                            variant="outline"
+                            className="bg-green-50 text-green-700 border-green-200"
+                          >
                             <CheckCircle className="h-3.5 w-3.5 mr-1" />
                             Active
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                          <Badge
+                            variant="outline"
+                            className="bg-red-50 text-red-700 border-red-200"
+                          >
                             <XCircle className="h-3.5 w-3.5 mr-1" />
                             Blocked
                           </Badge>
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={user.role === "admin" ? "default" : "secondary"} className="capitalize">
+                        <Badge
+                          variant={
+                            user.role === "admin" ? "default" : "secondary"
+                          }
+                          className="capitalize"
+                        >
                           {user.role}
                         </Badge>
                       </TableCell>
                       <TableCell>{user.orders}</TableCell>
-                      <TableCell>{new Date(user.lastActive).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -295,14 +365,27 @@ export default function UsersPage() {
 
           <div className="flex items-center justify-between mt-4">
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              Showing <span className="font-medium">{filteredUsers.length}</span> of{" "}
-              <span className="font-medium">{users.length}</span> users
+              Showing{" "}
+              <span className="font-medium">{filteredUsers.length}</span> of{" "}
+              <span className="font-medium">{totalUsers}</span> users
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1 || loading}
+              >
                 Previous
               </Button>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextPage}
+                disabled={
+                  currentPage >= Math.ceil(totalUsers / pageLimit) || loading
+                }
+              >
                 Next
               </Button>
             </div>
@@ -310,5 +393,5 @@ export default function UsersPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
