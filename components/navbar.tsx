@@ -8,32 +8,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/use-toast";
-import dbService from "@/appwrite/database";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/context/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchSuggestions } from "@/hooks/use-search-suggestions";
+import dbService from "@/appwrite/database";
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { toast } = useToast();
   const [categories, setCategories] = useState<any[]>([]);
-  const [searchValue, setSearchValue] = useState("");
-  const [debouncedValue, setDebouncedValue] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const { itemCount } = useCart();
+  const { itemCount, toggleCart } = useCart();
   const router =
     typeof window !== "undefined"
       ? require("next/navigation").useRouter()
       : null;
 
-  // Debounce search input
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(searchValue);
-    }, 400);
-    return () => clearTimeout(handler);
-  }, [searchValue]);
+  // Use the search suggestions hook
+  const {
+    searchResults,
+    loading: searchLoading,
+    searchValue,
+    setSearchValue,
+    debouncedValue,
+    showDropdown,
+    setShowDropdown,
+  } = useSearchSuggestions();
 
   // Navigate to products page with search param when debouncedValue changes
   useEffect(() => {
@@ -41,39 +41,7 @@ export default function Navbar() {
       if (router)
         router.push(`/products?search=${encodeURIComponent(debouncedValue)}`);
     }
-  }, [debouncedValue, isSearchOpen]);
-
-  // Fetch matching products for suggestions
-  useEffect(() => {
-    let active = true;
-    const fetchResults = async () => {
-      if (debouncedValue.trim().length === 0) {
-        setSearchResults([]);
-        setShowDropdown(false);
-        return;
-      }
-      try {
-        // Fetch all products and filter client-side (or use a dedicated search endpoint if available)
-        const res = await dbService.getAllProductsNotDisabled(1, 10);
-        const docs = res?.documents || [];
-        const filtered = docs.filter((p: any) =>
-          p.name?.toLowerCase().includes(debouncedValue.toLowerCase())
-        );
-        if (active) {
-          setSearchResults(filtered);
-          setShowDropdown(true);
-        }
-      } catch {
-        setSearchResults([]);
-        setShowDropdown(false);
-      }
-    };
-    if (isSearchOpen && debouncedValue) fetchResults();
-    else setShowDropdown(false);
-    return () => {
-      active = false;
-    };
-  }, [debouncedValue, isSearchOpen]);
+  }, [debouncedValue, isSearchOpen, router]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -140,12 +108,6 @@ export default function Navbar() {
                         {cat.name}
                       </Link>
                     ))}
-                <Link
-                  href="/sale"
-                  className="text-lg font-medium text-red-600 hover:text-red-700 transition-colors"
-                >
-                  Sale
-                </Link>
                 <div className="border-t my-4 pt-4">
                   <Link
                     href="/login"
@@ -196,12 +158,6 @@ export default function Navbar() {
                     {cat.name}
                   </Link>
                 ))}
-            <Link
-              href="/sale"
-              className="text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
-            >
-              Sale
-            </Link>
           </nav>
 
           {/* Actions */}
@@ -250,7 +206,8 @@ export default function Navbar() {
                       className="absolute left-0 right-0 mt-2 bg-white border rounded shadow-lg max-h-80 overflow-y-auto"
                       style={{ top: "100%", zIndex: 50 }}
                     >
-                      {searchResults.map((product: any) => (
+                      {" "}
+                      {searchResults.map((product) => (
                         <Link
                           key={product.$id || product.id}
                           href={`/products/${product.$id || product.id}`}
@@ -304,24 +261,27 @@ export default function Navbar() {
                 <span className="sr-only">Search</span>
               </Button>
             )}
-            <Button variant="ghost" size="icon" asChild className="relative">
-              <Link href="/cart">
-                <ShoppingBag className="h-5 w-5" />
-                <AnimatePresence>
-                  {itemCount > 0 && (
-                    <motion.span 
-                      className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white rounded-full text-[10px] flex items-center justify-center"
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      key="cart-count"
-                    >
-                      {itemCount > 99 ? '99+' : itemCount}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-                <span className="sr-only">Cart ({itemCount} items)</span>
-              </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative"
+              onClick={() => toggleCart()}
+            >
+              <ShoppingBag className="h-5 w-5" />
+              <AnimatePresence>
+                {itemCount > 0 && (
+                  <motion.span
+                    className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white rounded-full text-[10px] flex items-center justify-center"
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    key="cart-count"
+                  >
+                    {itemCount > 99 ? "99+" : itemCount}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+              <span className="sr-only">Cart ({itemCount} items)</span>
             </Button>
             <Button
               variant="ghost"

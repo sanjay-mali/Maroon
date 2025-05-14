@@ -1,12 +1,10 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import dbService from "@/appwrite/database";
 import SkeletonCategoryCard from "./skeleton-category-card";
+import { useCategories } from "@/hooks/use-categories";
 
 export default function CategorySection() {
-  const [categories, setCategories] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { categories, loading } = useCategories();
 
   // Expanded warm and mixed color palette
   const colorPalette = [
@@ -40,23 +38,8 @@ export default function CategorySection() {
     "#B2F7EF", // aqua
     "#B2B1CF", // muted purple
   ];
-
   // Helper to get a color for each card
   const getColor = (idx: number) => colorPalette[idx % colorPalette.length];
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const result = await dbService.getAllCategories(1, 12);
-        if (result && result.documents) {
-          setCategories(result.documents);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   if (loading) {
     return (

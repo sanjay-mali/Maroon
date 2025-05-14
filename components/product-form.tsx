@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import dbService from "@/appwrite/database";
 import ProductImageCarousel from "./product-image-carousel";
 import { Editor } from "@tinymce/tinymce-react";
+import { useAdminCategories, useProductById } from "@/hooks/admin-hooks";
 
 export interface Product {
   name: string;
@@ -68,9 +69,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ isEdit, productId }) => {
   const [newSize, setNewSize] = useState("");
   const [colors, setColors] = useState<string[]>([]);
   const [newColor, setNewColor] = useState("");
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-    []
-  );
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [status, setStatus] = useState<string>("draft");
   const [isPublished, setIsPublished] = useState(false);
@@ -92,66 +90,34 @@ const ProductForm: React.FC<ProductFormProps> = ({ isEdit, productId }) => {
   const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
   const MAX_IMAGES = 8;
 
+  const { categories } = useAdminCategories();
+  const { product, isLoading: isProductLoading } = useProductById(productId);
+
   useEffect(() => {
-    const init = async () => {
-      setIsLoading(true);
-      try {
-        // Fetch categories
-        const categoriesResult = await dbService.getAllCategories(1, 100);
-        if (categoriesResult && categoriesResult.documents) {
-          setCategories(
-            categoriesResult.documents.map((cat) => ({
-              id: cat.id,
-              name: cat.name,
-            }))
-          );
-        }
-
-        // If editing, fetch product data
-        if (isEdit && productId) {
-          const productData = await dbService.getProductById(productId);
-          if (productData) {
-            setName(productData.name || "");
-            setDescription(productData.description || "");
-            setPrice(productData.price?.toString() || "");
-            setDiscountPrice(productData.discount_price?.toString() || "");
-            setStock(productData.stock?.toString() || "");
-            setSizes(productData.sizes || []);
-            setColors(productData.colors || []);
-            setSelectedCategories(productData.categories || []);
-            setExistingImages(productData.images || []);
-            setIsPublished(productData.is_published || false);
-            setIsDraft(
-              productData.is_draft !== undefined ? productData.is_draft : true
-            );
-            setIsFeatured(productData.is_featured || false);
-            setIsNew(productData.is_new || false);
-            setIsDisabled(productData.is_disabled || false);
-            setStatus(
-              productData.is_published
-                ? "published"
-                : productData.is_disabled
-                ? "disabled"
-                : "draft"
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Error initializing product form:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load product data",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    init();
-  }, [isEdit, productId, toast]);
-
-  console.log("categories", categories);
+    if (isEdit && product) {
+      setName(product.name || "");
+      setDescription(product.description || "");
+      setPrice(product.price?.toString() || "");
+      setDiscountPrice(product.discount_price?.toString() || "");
+      setStock(product.stock?.toString() || "");
+      setSizes(product.sizes || []);
+      setColors(product.colors || []);
+      setSelectedCategories(product.categories || []);
+      setExistingImages(product.images || []);
+      setIsPublished(product.is_published || false);
+      setIsDraft(product.is_draft !== undefined ? product.is_draft : true);
+      setIsFeatured(product.is_featured || false);
+      setIsNew(product.is_new || false);
+      setIsDisabled(product.is_disabled || false);
+      setStatus(
+        product.is_published
+          ? "published"
+          : product.is_disabled
+          ? "disabled"
+          : "draft"
+      );
+    }
+  }, [isEdit, product]);
 
   useEffect(() => {
     setIsPublished(status === "published");
@@ -389,7 +355,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isEdit, productId }) => {
     return category ? category.name : "";
   };
 
-  if (isLoading) {
+  if (isLoading || isProductLoading) {
     return (
       <div className="flex items-center justify-center p-8 w-full">
         <div className="text-center">

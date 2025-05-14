@@ -47,7 +47,7 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const { toast } = useToast();
-  const { addToCart } = useCart();
+  const { addToCart, toggleCart } = useCart();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -67,6 +67,9 @@ export default function ProductCard({
       size: defaultSize,
       quantity: 1,
     });
+
+    // Open cart sidebar
+    toggleCart(true);
 
     toast({
       title: "Added to cart",
@@ -111,7 +114,7 @@ export default function ProductCard({
     >
       <Link href={`/products/${id}`} scroll={false}>
         <div
-          className="product-card group"
+          className="product-card group relative"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
@@ -123,41 +126,21 @@ export default function ProductCard({
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
 
-            {/* Quick action buttons */}
+            {/* Wishlist button - top right */}
             <motion.div
-              className="absolute inset-0 bg-black/5 flex items-center justify-center gap-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: isHovered ? 1 : 0 }}
-              transition={{ duration: 0.2 }}
+              className="absolute top-2 right-2 z-10"
+              initial={{ opacity: 0.7 }}
+              whileHover={{ opacity: 1, scale: 1.1 }}
             >
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
+              <Button
+                size="icon"
+                variant="secondary"
+                className="rounded-full h-8 w-8 bg-white/80 hover:bg-white shadow-sm"
+                onClick={handleAddToWishlist}
               >
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="rounded-full"
-                  onClick={handleAddToCart}
-                >
-                  <ShoppingBag className="h-4 w-4" />
-                  <span className="sr-only">Add to cart</span>
-                </Button>
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="rounded-full"
-                  onClick={handleAddToWishlist}
-                >
-                  <Heart className="h-4 w-4" />
-                  <span className="sr-only">Add to wishlist</span>
-                </Button>
-              </motion.div>
+                <Heart className="h-4 w-4 text-gray-700 hover:text-red-500" />
+                <span className="sr-only">Add to wishlist</span>
+              </Button>
             </motion.div>
 
             {/* Tags */}
@@ -204,6 +187,24 @@ export default function ProductCard({
                   {formattedOriginalPrice}
                 </span>
               )}
+            </div>
+
+            {/* Add to cart button */}
+            <div className="mt-3">
+              <motion.div
+                className="w-full"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Button
+                  size="sm"
+                  className="w-full flex items-center justify-center gap-2"
+                  onClick={handleAddToCart}
+                >
+                  <ShoppingBag className="h-4 w-4" />
+                  <span>Add to Cart</span>
+                </Button>
+              </motion.div>
             </div>
           </div>
         </div>
