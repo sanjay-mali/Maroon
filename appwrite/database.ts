@@ -10,6 +10,8 @@ export class DBService {
   ordersCollectionId = "680f5ef5001ce239d55d";
   usersCollectionId = "680f5ee500152b699ab8";
   storageId = "680f59ea002f06770208";
+  bannersCollectionId = "6819d90000299c92d966";
+  announcementsCollectionId = "68233e9700242bd9a521";
 
   constructor() {
     this.client
@@ -95,6 +97,44 @@ export class DBService {
       );
     } catch (error) {
       console.error("Error getting all products:", error);
+      throw error;
+    }
+  }
+
+  // Get featured products with server-side filtering
+  async getFeaturedProducts(page = 1, limit = 10) {
+    try {
+      return await this.database.listDocuments(
+        this.databaseId,
+        this.productsCollectionId,
+        [
+          Query.equal("is_disabled", false),
+          Query.equal("is_featured", true),
+          Query.limit(limit),
+          Query.offset((page - 1) * limit),
+        ]
+      );
+    } catch (error) {
+      console.error("Error getting featured products:", error);
+      throw error;
+    }
+  }
+
+  // Get new products with server-side filtering
+  async getNewProducts(page = 1, limit = 10) {
+    try {
+      return await this.database.listDocuments(
+        this.databaseId,
+        this.productsCollectionId,
+        [
+          Query.equal("is_disabled", false),
+          Query.equal("is_new", true),
+          Query.limit(limit),
+          Query.offset((page - 1) * limit),
+        ]
+      );
+    } catch (error) {
+      console.error("Error getting new products:", error);
       throw error;
     }
   }
@@ -439,6 +479,42 @@ export class DBService {
     }
   }
 
+  // Enhanced image handling
+  async uploadAndGetImageUrl(
+    file: File
+  ): Promise<{ fileId: string; imageUrl: string }> {
+    try {
+      // Upload file to storage
+      const uploadedFile = await this.storage.createFile(
+        this.storageId,
+        ID.unique(),
+        file
+      );
+
+      // Generate preview URL
+      const imageUrl = this.storage
+        .getFilePreview(this.storageId, uploadedFile.$id)
+        .toString();
+
+      return {
+        fileId: uploadedFile.$id,
+        imageUrl: imageUrl,
+      };
+    } catch (error) {
+      console.error("Error uploading and getting image URL:", error);
+      throw error;
+    }
+  }
+
+  async deleteImageWithId(fileId: string) {
+    try {
+      await this.storage.deleteFile(this.storageId, fileId);
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      throw error;
+    }
+  }
+
   async createOrder(orderData: any) {
     try {
       return await this.database.createDocument(
@@ -600,7 +676,6 @@ export class DBService {
       throw error;
     }
   }
-
   async unblockUser(userId: string) {
     try {
       return await this.updateUser(userId, { isActive: true });
@@ -627,7 +702,22 @@ export class DBService {
   ) {
     try {
       const user = await this.getUserById(userId);
-      const addresses = user.addresses || [];
+      let addresses = [];
+
+      // Parse existing addresses if they exist
+      if (user.addresses) {
+        try {
+          // Handle both string and array formats for backward compatibility
+          if (typeof user.addresses === "string") {
+            addresses = JSON.parse(user.addresses);
+          } else if (Array.isArray(user.addresses)) {
+            addresses = user.addresses;
+          }
+        } catch (e) {
+          // If parsing fails, assume it's an empty array
+          addresses = [];
+        }
+      }
 
       // Create a new address with ID
       const newAddress = {
@@ -642,23 +732,22 @@ export class DBService {
 
       // If this is the default address, make other addresses non-default
       if (newAddress.isDefault) {
-        addresses.forEach((addr) => {
-          const parsedAddr = typeof addr === "string" ? JSON.parse(addr) : addr;
-          parsedAddr.isDefault = false;
-          return JSON.stringify(parsedAddr);
+        addresses = addresses.map((addr: any) => {
+          return { ...addr, isDefault: false };
         });
       }
 
-      // Add the new address as a JSON string
-      addresses.push(JSON.stringify(newAddress));
+      // Add the new address to the array
+      addresses.push(newAddress);
 
-      // Update the user document
+      // Update the user document with stringified addresses
+      // Store as a JSON string since Appwrite doesn't support nested objects
       return await this.database.updateDocument(
         this.databaseId,
         this.usersCollectionId,
         userId,
         {
-          addresses,
+          addresses: JSON.stringify(addresses),
           updatedAt: new Date().toISOString(),
         }
       );
@@ -667,22 +756,52 @@ export class DBService {
       throw error;
     }
   }
-
   async getUserAddresses(userId: string) {
     try {
       const user = await this.getUserById(userId);
-      return user.addresses || [];
+
+      // Handle case where addresses is stored as a JSON string
+      if (user.addresses && typeof user.addresses === "string") {
+        try {
+          return JSON.parse(user.addresses);
+        } catch (e) {
+          console.error("Error parsing addresses JSON:", e);
+          return [];
+        }
+      }
+
+      // Handle case where addresses is already an array
+      if (Array.isArray(user.addresses)) {
+        return user.addresses;
+      }
+
+      // Default to empty array if no addresses found
+      return [];
     } catch (error) {
       console.error("Error getting user addresses:", error);
       throw error;
     }
   }
-
   // User Wishlist Management
   async addToWishlist(userId: string, productId: string) {
     try {
       const user = await this.getUserById(userId);
-      let wishlist = user.wishlist || [];
+      let wishlist = [];
+
+      // Parse existing wishlist if it exists
+      if (user.wishlist) {
+        try {
+          // Handle both string and array formats for backward compatibility
+          if (typeof user.wishlist === "string") {
+            wishlist = JSON.parse(user.wishlist);
+          } else if (Array.isArray(user.wishlist)) {
+            wishlist = user.wishlist;
+          }
+        } catch (e) {
+          // If parsing fails, assume it's an empty array
+          wishlist = [];
+        }
+      }
 
       // Only add if not already in wishlist
       if (!wishlist.includes(productId)) {
@@ -693,7 +812,7 @@ export class DBService {
           this.usersCollectionId,
           userId,
           {
-            wishlist,
+            wishlist: JSON.stringify(wishlist),
             updatedAt: new Date().toISOString(),
           }
         );
@@ -705,18 +824,34 @@ export class DBService {
       throw error;
     }
   }
-
   async removeFromWishlist(userId: string, productId: string) {
     try {
       const user = await this.getUserById(userId);
-      const wishlist = (user.wishlist || []).filter((id) => id !== productId);
+      let wishlist = [];
+
+      // Parse existing wishlist if it exists
+      if (user.wishlist) {
+        try {
+          // Handle both string and array formats for backward compatibility
+          if (typeof user.wishlist === "string") {
+            wishlist = JSON.parse(user.wishlist);
+          } else if (Array.isArray(user.wishlist)) {
+            wishlist = user.wishlist;
+          }
+        } catch (e) {
+          wishlist = [];
+        }
+      }
+
+      // Filter out the product to remove
+      const updatedWishlist = wishlist.filter((id: string) => id !== productId);
 
       return await this.database.updateDocument(
         this.databaseId,
         this.usersCollectionId,
         userId,
         {
-          wishlist,
+          wishlist: JSON.stringify(updatedWishlist),
           updatedAt: new Date().toISOString(),
         }
       );
@@ -725,22 +860,54 @@ export class DBService {
       throw error;
     }
   }
-
   async getWishlist(userId: string) {
     try {
       const user = await this.getUserById(userId);
-      return user.wishlist || [];
+
+      // Handle case where wishlist is stored as a JSON string
+      if (user.wishlist && typeof user.wishlist === "string") {
+        try {
+          return JSON.parse(user.wishlist);
+        } catch (e) {
+          console.error("Error parsing wishlist JSON:", e);
+          return [];
+        }
+      }
+
+      // Handle case where wishlist is already an array
+      if (Array.isArray(user.wishlist)) {
+        return user.wishlist;
+      }
+
+      // Default to empty array if no wishlist found
+      return [];
     } catch (error) {
       console.error("Error getting wishlist:", error);
       throw error;
     }
   }
-
   // User order tracking
   async addOrderToUserHistory(userId: string, orderId: string) {
     try {
       const user = await this.getUserById(userId);
-      const orders = user.orders || [];
+      let orders = [];
+
+      // Parse existing orders if they exist
+      if (user.orders) {
+        try {
+          // Handle both string and array formats for backward compatibility
+          if (typeof user.orders === "string") {
+            orders = JSON.parse(user.orders);
+          } else if (Array.isArray(user.orders)) {
+            orders = user.orders;
+          }
+        } catch (e) {
+          // If parsing fails, assume it's an empty array
+          orders = [];
+        }
+      }
+
+      // Add the new order
       orders.push(orderId);
 
       return await this.database.updateDocument(
@@ -748,7 +915,7 @@ export class DBService {
         this.usersCollectionId,
         userId,
         {
-          orders,
+          orders: JSON.stringify(orders),
           updatedAt: new Date().toISOString(),
         }
       );
@@ -757,14 +924,202 @@ export class DBService {
       throw error;
     }
   }
-
   async getUserOrderCount(userId: string) {
     try {
       const user = await this.getUserById(userId);
-      return (user.orders || []).length;
+
+      // Handle case where orders is stored as a JSON string
+      if (user.orders && typeof user.orders === "string") {
+        try {
+          const parsedOrders = JSON.parse(user.orders);
+          return Array.isArray(parsedOrders) ? parsedOrders.length : 0;
+        } catch (e) {
+          console.error("Error parsing orders JSON:", e);
+          return 0;
+        }
+      }
+
+      // Handle case where orders is already an array
+      if (Array.isArray(user.orders)) {
+        return user.orders.length;
+      }
+
+      // Default to 0 if no orders found
+      return 0;
     } catch (error) {
       console.error("Error getting user order count:", error);
       return 0;
+    }
+  }
+
+  // Banners
+  async listDocuments(queries: string[] = [], orderBy?: { orderBy?: string }) {
+    try {
+      const queryArray = queries.map((q) => {
+        const [key, value] = q.split(/([<>]=?)/);
+
+        // Handle boolean values
+        if (value === "true" || value === "false") {
+          return Query.equal(key, value === "true");
+        }
+
+        // Handle date comparisons
+        if (q.includes("<=")) {
+          const [field, date] = q.split("<=");
+          return Query.lessThanEqual(field, date);
+        }
+        if (q.includes(">=")) {
+          const [field, date] = q.split(">=");
+          return Query.greaterThanEqual(field, date);
+        }
+
+        // Handle equals comparison (default case)
+        const [field, equalValue] = q.split("=");
+        return Query.equal(field, equalValue);
+      });
+
+      if (orderBy?.orderBy) {
+        queryArray.push(Query.orderAsc(orderBy.orderBy));
+      }
+
+      return await this.database.listDocuments(
+        this.databaseId,
+        "6819d90000299c92d966",
+        queryArray
+      );
+    } catch (error) {
+      console.error("Appwrite service :: listDocuments :: error", error);
+      throw error;
+    }
+  }
+  async createDocument(data: any, collectionId = "6819d90000299c92d966") {
+    try {
+      return await this.database.createDocument(
+        this.databaseId,
+        collectionId,
+        ID.unique(),
+        data
+      );
+    } catch (error) {
+      console.error("Appwrite service :: createDocument :: error", error);
+      throw error;
+    }
+  }
+
+  async updateDocument(
+    documentId: string,
+    data: any,
+    collectionId = "6819d90000299c92d966"
+  ) {
+    try {
+      return await this.database.updateDocument(
+        this.databaseId,
+        collectionId,
+        documentId,
+        data
+      );
+    } catch (error) {
+      console.error("Appwrite service :: updateDocument :: error", error);
+      throw error;
+    }
+  }
+
+  async deleteDocument(
+    documentId: string,
+    collectionId = "6819d90000299c92d966"
+  ) {
+    try {
+      return await this.database.deleteDocument(
+        this.databaseId,
+        collectionId,
+        documentId
+      );
+    } catch (error) {
+      console.error("Appwrite service :: deleteDocument :: error", error);
+      throw error;
+    }
+  }
+  // Banner Methods
+  async getBanners(type?: "hero" | "sale") {
+    try {
+      const queries = [
+        Query.equal("isActive", true),
+        Query.orderDesc("$createdAt"),
+      ];
+
+      // Add type filter if specified
+      if (type) {
+        queries.push(Query.equal("type", type));
+      }
+
+      return await this.database.listDocuments(
+        this.databaseId,
+        this.bannersCollectionId,
+        queries
+      );
+    } catch (error) {
+      console.error("Error fetching banners:", error);
+      throw error;
+    }
+  }
+  // Announcement Methods
+  async getAnnouncements() {
+    try {
+      return await this.database.listDocuments(
+        this.databaseId,
+        this.announcementsCollectionId,
+        [Query.equal("isActive", true), Query.orderDesc("$createdAt")]
+      );
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+      throw error;
+    }
+  }
+
+  async getAllAnnouncements() {
+    try {
+      return await this.database.listDocuments(
+        this.databaseId,
+        this.announcementsCollectionId,
+        [Query.orderDesc("$createdAt")]
+      );
+    } catch (error) {
+      console.error("Error fetching all announcements:", error);
+      throw error;
+    }
+  }
+
+  async createAnnouncement(data: any) {
+    try {
+      return await this.createDocument(data, this.announcementsCollectionId);
+    } catch (error) {
+      console.error("Error creating announcement:", error);
+      throw error;
+    }
+  }
+
+  async updateAnnouncement(documentId: string, data: any) {
+    try {
+      return await this.updateDocument(
+        documentId,
+        data,
+        this.announcementsCollectionId
+      );
+    } catch (error) {
+      console.error("Error updating announcement:", error);
+      throw error;
+    }
+  }
+
+  async deleteAnnouncement(documentId: string) {
+    try {
+      return await this.deleteDocument(
+        documentId,
+        this.announcementsCollectionId
+      );
+    } catch (error) {
+      console.error("Error deleting announcement:", error);
+      throw error;
     }
   }
 }
