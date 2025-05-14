@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { useToast } from "@/components/ui/use-toast";
 
 export interface CartItem {
@@ -25,12 +31,15 @@ interface CartContextType {
   shipping: number;
   total: number;
   itemCount: number;
+  isCartOpen: boolean;
+  toggleCart: (forcedState?: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
 
@@ -43,6 +52,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const tax = subtotal * 0.08; // 8% tax
   const total = subtotal + shipping + tax;
   const itemCount = cart.reduce((count, item) => count + item.quantity, 0);
+
+  // Toggle cart sidebar
+  const toggleCart = (forcedState?: boolean) => {
+    setIsCartOpen(forcedState !== undefined ? forcedState : !isCartOpen);
+  };
+
+  // Close cart when clicking outside
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (isCartOpen) {
+        const cartSidebar = document.getElementById("cart-sidebar");
+        if (cartSidebar && !cartSidebar.contains(e.target as Node)) {
+          setIsCartOpen(false);
+        }
+      }
+    };
+
+    if (isCartOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [isCartOpen]);
 
   // Load cart from localStorage on initial render
   useEffect(() => {
@@ -69,9 +103,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCart((currentCart) => {
       // Check if item already exists in cart
       const existingItemIndex = currentCart.findIndex(
-        (cartItem) => 
-          cartItem.id === item.id && 
-          cartItem.color === item.color && 
+        (cartItem) =>
+          cartItem.id === item.id &&
+          cartItem.color === item.color &&
           cartItem.size === item.size
       );
 
@@ -101,7 +135,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCart((currentCart) => {
       const itemToRemove = currentCart.find((item) => item.id === id);
       const newCart = currentCart.filter((item) => item.id !== id);
-      
+
       if (itemToRemove) {
         toast({
           title: "Item removed",
@@ -116,11 +150,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Update item quantity
   const updateQuantity = (id: string, quantity: number) => {
     if (quantity < 1) return;
-    
-    setCart((currentCart) => 
-      currentCart.map((item) => 
-        item.id === id ? { ...item, quantity } : item
-      )
+
+    setCart((currentCart) =>
+      currentCart.map((item) => (item.id === id ? { ...item, quantity } : item))
     );
   };
 
@@ -146,6 +178,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         tax,
         total,
         itemCount,
+        isCartOpen,
+        toggleCart,
       }}
     >
       {children}
