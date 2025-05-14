@@ -23,9 +23,7 @@ export default function Layout({
         setAuthStatus(false);
       }
     };
-    
     checkAuth();
-    console.log('authStatus', authStatus); // Fixed typo
   }, [pathname]); // Re-run when route changes
 
   return (
