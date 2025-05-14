@@ -7,6 +7,7 @@ import Footer from "@/components/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { CartProvider } from "@/context/CartContext";
 import CartSidebar from "@/components/cart-sidebar";
+import { Suspense } from "react";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -59,7 +60,9 @@ export default function RootLayout({
       <body className={`${playfair.variable} ${poppins.variable} font-poppins`}>
         <CartProvider>
           <Navbar />
-          <main>{children}</main>
+          <Suspense>
+            <main>{children}</main>
+          </Suspense>
           <Footer />
           <CartSidebar />
           <Toaster />
