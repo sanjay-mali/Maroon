@@ -1,9 +1,9 @@
 import HeroBanner from "@/components/hero-banner";
 import CategorySection from "@/components/category-section";
 import FeaturedProducts from "@/components/featured-products";
-import TrustBadges from "@/components/trust-badges";
 import NewArrivals from "@/components/new-arrivals";
 import PromoBanner from "@/components/promo-banner";
+import AnnouncementMarquee from "@/components/announcement-marquee";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -16,17 +16,10 @@ export default function Home() {
   return (
     <>
       {/* Announcement Bar */}
-      <div className="announcement-bar">
-        <p>India's Biggest Women's Fashion Sale Live Now!</p>
-      </div>
+      <AnnouncementMarquee />
 
       {/* Hero Banner */}
       <HeroBanner />
-
-      {/* Trust Badges */}
-      <section className="py-8 border-b">
-        <TrustBadges />
-      </section>
 
       {/* Categories */}
       <section className="py-16">
