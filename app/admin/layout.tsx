@@ -1,12 +1,17 @@
 "use client";
 
-import type React from "react";
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import { useTheme } from "next-themes";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
+  Sun,
+  Moon,
+  Menu,
   LayoutDashboard,
   ShoppingBag,
   Tag,
@@ -15,16 +20,10 @@ import {
   MapPin,
   Settings,
   LogOut,
-  Menu,
-  Sun,
-  Moon,
-  Loader2,
+  ImageIcon,
+  Megaphone,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useToast } from "@/components/ui/use-toast";
 import { ThemeProvider } from "@/components/theme-provider";
-import { useTheme } from "next-themes";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -48,6 +47,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { title: "Orders", href: "/admin/orders", icon: Package },
     { title: "Users", href: "/admin/users", icon: Users },
     { title: "Addresses", href: "/admin/addresses", icon: MapPin },
+    { title: "Banners", href: "/admin/banners", icon: ImageIcon },
+    { title: "Announcements", href: "/admin/announcements", icon: Megaphone },
     { title: "Settings", href: "/admin/settings", icon: Settings },
   ];
 
@@ -73,6 +74,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 height={50}
                 className="h-auto"
               />
+              <span className="font-bold text-lg">Admin</span>
             </Link>
           </div>
           <nav className="flex-1 overflow-auto py-4">
@@ -184,11 +186,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               ) : (
                 <Moon className="h-5 w-5" />
               )}
-              <span className="sr-only">Toggle theme</span>
             </Button>
           </header>
 
-          <main className="flex-1 p-4">{children}</main>
+          {/* Main Content Area */}
+          <main className="flex-1 overflow-auto p-6">{children}</main>
         </div>
       </div>
     </ThemeProvider>
