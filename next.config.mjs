@@ -6,10 +6,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  images: {
-    unoptimized: true,
-  },
-  // Define which env vars are available to the client
   env: {
     NEXT_PUBLIC_RAZORPAY_KEY_ID: process.env.NEXT_PUBLIC_REZORPAY_KEY_ID,
   },
@@ -18,6 +14,13 @@ const nextConfig = {
     RAZORPAY_KEY_ID: process.env.NEXT_PUBLIC_REZORPAY_KEY_ID,
     RAZORPAY_KEY_SECRET: process.env.NEXT_PUBLIC_REZORPAY_SECRET_KEY,
   },
-}
+  images: {
+    domains: [
+      "hebbkx1anhila5yf.public.blob.vercel-storage.com",
+      "nyc.cloud.appwrite.io",
+    ],
+  },
+};
 
-export default nextConfig
+export default nextConfig;
+  
