@@ -30,7 +30,7 @@ export class AuthService {
         password,
         name
       );
-
+      console.log("userAccount", userAccount);
       if (userAccount) {
         await dbService.createUser({
           userId: userAccount.$id,
