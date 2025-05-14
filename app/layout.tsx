@@ -6,6 +6,7 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { CartProvider } from "@/context/CartContext";
+import CartSidebar from "@/components/cart-sidebar";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -60,6 +61,7 @@ export default function RootLayout({
           <Navbar />
           <main>{children}</main>
           <Footer />
+          <CartSidebar />
           <Toaster />
         </CartProvider>
       </body>
