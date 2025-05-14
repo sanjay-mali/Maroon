@@ -9,13 +9,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Slider } from "@/components/ui/slider";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import dbService from "@/appwrite/database";
+import { useCategories } from "@/hooks/use-categories";
 
 export default function ProductsFilter() {
   const [priceRange, setPriceRange] = useState([500, 10000]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const { categories, loading: loadingCategories } = useCategories();
   const searchParams = useSearchParams();
   const router = useRouter();
   const selectedCategory = searchParams.get("category");
@@ -42,12 +42,6 @@ export default function ProductsFilter() {
     .filter(Boolean);
   const minPrice = Number(searchParams.get("minPrice")) || 500;
   const maxPrice = Number(searchParams.get("maxPrice")) || 10000;
-
-  useEffect(() => {
-    dbService.getAllCategories(1, 100).then((res) => {
-      setCategories(res.documents || []);
-    });
-  }, []);
 
   const handleCategoryChange = (name: string) => {
     const params = new URLSearchParams(window.location.search);
@@ -125,16 +119,22 @@ export default function ProductsFilter() {
           <AccordionTrigger>Category</AccordionTrigger>
           <AccordionContent>
             <div className="space-y-2">
-              {categories.map((cat: any) => (
-                <div key={cat.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={selectedCategory === cat.name}
-                    onCheckedChange={() => handleCategoryChange(cat.name)}
-                    id={`category-${cat.id}`}
-                  />
-                  <Label htmlFor={`category-${cat.id}`}>{cat.name}</Label>
-                </div>
-              ))}
+              {loadingCategories ? (
+                Array(5).fill(0).map((_, i) => (
+                  <div key={i} className="h-6 bg-gray-200 rounded animate-pulse"></div>
+                ))
+              ) : (
+                categories.map((cat) => (
+                  <div key={cat.$id} className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={selectedCategory === cat.name}
+                      onCheckedChange={() => handleCategoryChange(cat.name)}
+                      id={`category-${cat.$id}`}
+                    />
+                    <Label htmlFor={`category-${cat.$id}`}>{cat.name}</Label>
+                  </div>
+                ))
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>

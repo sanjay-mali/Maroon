@@ -1,45 +1,25 @@
 "use client";
-import { useEffect, useState } from "react";
 import ProductCard from "@/components/product-card";
 import SkeletonProductCard from "@/components/skeleton-product-card";
-import dbService from "@/appwrite/database";
+import { useProducts } from "@/hooks/use-products";
 
 interface ProductListProps {
   filter?: "featured" | "new" | null;
   limit?: number;
+  categoryId?: string;
 }
 
 export default function ProductList({
   filter = null,
   limit = 8,
+  categoryId = null,
 }: ProductListProps) {
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const result = await dbService.getAllProductsNotDisabled(1, limit);
-        let filtered = result && result.documents ? result.documents : [];
-        if (filter === "featured") {
-          filtered = filtered.filter((p: any) => p.is_featured);
-        } else if (filter === "new") {
-          filtered = filtered.filter((p: any) => p.is_new);
-        }
-        // Map $id to id for all products
-        filtered = filtered.map((p: any) => ({ id: p.$id || p.id, ...p }));
-        setProducts(filtered);
-      } catch (err) {
-        setError("Failed to load products. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, [filter, limit]);
+  // Use our optimized hook instead of direct API calls
+  const { products, loading, error } = useProducts({ 
+    filter,
+    limit,
+    categoryId
+  });
 
   if (loading)
     return (

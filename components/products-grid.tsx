@@ -1,9 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import dbService from "@/appwrite/database";
 import ProductCard from "@/components/product-card";
 import SkeletonProductCard from "@/components/skeleton-product-card";
+import { useSearchProducts } from "@/hooks/use-search-products";
 
 export default function ProductsGrid() {
   const searchParams = useSearchParams();
@@ -18,9 +18,12 @@ export default function ProductsGrid() {
   const minPrice = Number(searchParams.get("minPrice")) || 500;
   const maxPrice = Number(searchParams.get("maxPrice")) || 10000;
   const searchValue = searchParams.get("search")?.toLowerCase() || "";
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  // Use optimized hook for fetching products
+  const { products, loading, error } = useSearchProducts({
+    categoryName,
+    search: searchValue || null
+  });
 
   // Filtering logic
   const filterProducts = (products: any[]) => {
@@ -89,39 +92,7 @@ export default function ProductsGrid() {
         return products;
     }
   };
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        let result;
-        if (categoryName) {
-          // Fetch all categories and find the one with the matching name (decode URI and trim)
-          const cats = await dbService.getAllCategories(1, 100);
-          const decodedName = decodeURIComponent(categoryName)
-            .trim()
-            .toLowerCase();
-          const match = cats.documents.find(
-            (cat: any) => cat.name.trim().toLowerCase() === decodedName
-          );
-          if (match) {
-            result = await dbService.getProductsByCategory(match.id, 1, 100); // fetch more for client filtering
-          } else {
-            result = { documents: [] };
-          }
-        } else {
-          result = await dbService.getAllProductsNotDisabled(1, 100); // fetch more for client filtering
-        }
-        setProducts(result?.documents || []);
-      } catch (err: any) {
-        setError("Failed to load products. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, [categoryName, searchValue]);
+  // The API fetching is now handled by the useSearchProducts hook
 
   // Pagination logic
   const [currentPage, setCurrentPage] = useState(1);

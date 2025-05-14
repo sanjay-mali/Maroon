@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ProductCard from "@/components/product-card";
 import SkeletonProductCard from "@/components/skeleton-product-card";
-import dbService from "@/appwrite/database";
+import { useProducts } from "@/hooks/use-products";
 
 interface SimilarProductsProps {
   productId: string;
@@ -14,37 +14,26 @@ export default function SimilarProducts({
 }: SimilarProductsProps) {
   const [similar, setSimilar] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
+    // Use our optimized hook for fetching products
+  const { products, loading: productsLoading } = useProducts({
+    categoryId: categoryIds.length > 0 ? categoryIds[0] : undefined, 
+    limit: 8,
+    enabled: !!productId
+  });
+  
+  // Process the results to get similar products
   useEffect(() => {
-    const fetchSimilar = async () => {
-      setLoading(true);
-      try {
-        let products: any[] = [];
-        if (categoryIds.length > 0) {
-          // Fetch products from the first category (or all categories and merge)
-          const res = await dbService.getProductsByCategory(
-            categoryIds[0],
-            1,
-            8
-          );
-          products = res?.documents || [];
-        } else {
-          // Fallback: fetch random products
-          const res = await dbService.getAllProductsNotDisabled(1, 8);
-          products = res?.documents || [];
-        }
-        // Exclude the current product
-        setSimilar(
-          products.filter((p) => (p.$id || p.id) !== productId).slice(0, 4)
-        );
-      } catch {
-        setSimilar([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (productId) fetchSimilar();
-  }, [productId, categoryIds]);
+    if (!productsLoading && products.length > 0) {
+      // Exclude the current product and take up to 4
+      setSimilar(
+        products.filter(p => (p.$id || p.id) !== productId).slice(0, 4)
+      );
+      setLoading(false);
+    } else if (!productsLoading) {
+      setSimilar([]);
+      setLoading(false);
+    }
+  }, [products, productsLoading, productId]);
 
   if (loading) {
     return (
