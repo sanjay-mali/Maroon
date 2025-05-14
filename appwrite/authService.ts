@@ -1,5 +1,6 @@
 import { Client, Account, ID } from "appwrite";
 import dbService from "./database";
+import { config } from "@/config/config";
 
 export class AuthService {
   client = new Client();
@@ -7,8 +8,8 @@ export class AuthService {
 
   constructor() {
     this.client
-      .setEndpoint("https://nyc.cloud.appwrite.io/v1")
-      .setProject("680f3962002aecf25632");
+      .setEndpoint(config.appwriteUrl)
+      .setProject(config.appwriteProjectId);
 
     this.account = new Account(this.client);
   }

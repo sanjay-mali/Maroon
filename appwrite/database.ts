@@ -1,3 +1,4 @@
+import { config } from "@/config/config";
 import { Client, Databases, ID, Query, Storage } from "appwrite";
 
 export class DBService {
@@ -9,17 +10,142 @@ export class DBService {
   categoriesCollectionId = "680f5ed400232721c3a9";
   ordersCollectionId = "680f5ef5001ce239d55d";
   usersCollectionId = "680f5ee500152b699ab8";
-  storageId = "680f59ea002f06770208";
+  storageId = config.appwriteBucketId;
   bannersCollectionId = "6819d90000299c92d966";
   announcementsCollectionId = "68233e9700242bd9a521";
 
   constructor() {
     this.client
-      .setEndpoint("https://nyc.cloud.appwrite.io/v1")
-      .setProject("680f3962002aecf25632");
+      .setEndpoint(config.appwriteUrl)
+      .setProject(config.appwriteProjectId);
 
     this.database = new Databases(this.client);
     this.storage = new Storage(this.client);
+  }
+
+  // Utility to filter allowed fields for each collection
+  static allowedFields: Record<string, string[]> = {
+    [DBService.prototype.productsCollectionId]: [
+      "name",
+      "description",
+      "categories",
+      "price",
+      "images",
+      "discount_price",
+      "stock",
+      "is_published",
+      "is_draft",
+      "is_featured",
+      "sizes",
+      "colors",
+      "is_new",
+      "is_disabled",
+    ],
+    [DBService.prototype.categoriesCollectionId]: [
+      "name",
+      "description",
+      "imageId",
+    ],
+    [DBService.prototype.ordersCollectionId]: [
+      "userId",
+      "totalAmount",
+      "status",
+      "items",
+      "createdAt",
+      "updatedAt",
+    ],
+    [DBService.prototype.usersCollectionId]: [
+      "name",
+      "email",
+      "isActive",
+      "role",
+      "wishlist",
+      "addresses",
+      "reviews",
+      "orders",
+      "createdAt",
+      "updatedAt",
+      "phone",
+      "avatar",
+    ],
+    [DBService.prototype.bannersCollectionId]: [
+      "title",
+      "subtitle",
+      "description",
+      "imageId",
+      "imageUrl",
+      "link",
+      "type",
+      "startDate",
+      "endDate",
+      "isActive",
+    ],
+    [DBService.prototype.announcementsCollectionId]: [
+      "title",
+      "content",
+      "createdAt",
+      "updatedAt",
+    ],
+  };
+
+  static filterAllowedFields(collectionId: string, data: any) {
+    const allowed = DBService.allowedFields[collectionId];
+    if (!allowed) return data;
+    const filtered: any = {};
+    for (const key of allowed) {
+      if (data[key] !== undefined) filtered[key] = data[key];
+    }
+    return filtered;
+  }
+
+  async createDocument(data: any, collectionId = this.bannersCollectionId) {
+    const filtered = DBService.filterAllowedFields(collectionId, data);
+    try {
+      return await this.database.createDocument(
+        this.databaseId,
+        collectionId,
+        ID.unique(),
+        filtered
+      );
+    } catch (error) {
+      console.error("Appwrite service :: createDocument :: error", error);
+      throw error;
+    }
+  }
+
+  async updateDocument(
+    documentId: string,
+    data: any,
+    collectionId = this.bannersCollectionId
+  ) {
+    const filtered = DBService.filterAllowedFields(collectionId, data);
+    try {
+      return await this.database.updateDocument(
+        this.databaseId,
+        collectionId,
+        documentId,
+        filtered
+      );
+    } catch (error) {
+      console.error("Appwrite service :: updateDocument :: error", error);
+      throw error;
+    }
+  }
+
+  async deleteDocument(
+    documentId: string,
+    collectionId = this.bannersCollectionId
+  ) {
+    try {
+      return await this.database.deleteDocument(
+        this.databaseId,
+        collectionId,
+        documentId
+      );
+    } catch (error) {
+      console.error("Appwrite service :: deleteDocument :: error", error);
+      throw error;
+    }
   }
 
   // Products
@@ -992,53 +1118,7 @@ export class DBService {
       throw error;
     }
   }
-  async createDocument(data: any, collectionId = "6819d90000299c92d966") {
-    try {
-      return await this.database.createDocument(
-        this.databaseId,
-        collectionId,
-        ID.unique(),
-        data
-      );
-    } catch (error) {
-      console.error("Appwrite service :: createDocument :: error", error);
-      throw error;
-    }
-  }
 
-  async updateDocument(
-    documentId: string,
-    data: any,
-    collectionId = "6819d90000299c92d966"
-  ) {
-    try {
-      return await this.database.updateDocument(
-        this.databaseId,
-        collectionId,
-        documentId,
-        data
-      );
-    } catch (error) {
-      console.error("Appwrite service :: updateDocument :: error", error);
-      throw error;
-    }
-  }
-
-  async deleteDocument(
-    documentId: string,
-    collectionId = "6819d90000299c92d966"
-  ) {
-    try {
-      return await this.database.deleteDocument(
-        this.databaseId,
-        collectionId,
-        documentId
-      );
-    } catch (error) {
-      console.error("Appwrite service :: deleteDocument :: error", error);
-      throw error;
-    }
-  }
   // Banner Methods
   async getBanners(type?: "hero" | "sale") {
     try {

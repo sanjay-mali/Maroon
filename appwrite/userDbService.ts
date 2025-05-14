@@ -6,15 +6,20 @@ import dbService from "@/appwrite/database";
 import { ID } from "appwrite";
 
 // Add user address
-export async function addUserAddress(userId, addressData) {
+export async function addUserAddress(userId: string, addressData: any) {
   try {
     const user = await dbService.getUserById(userId);
     const updatedAddresses = DbHelper.addAddress(user.addresses, addressData);
-    
-    return await dbService.updateUser(userId, {
-      addresses: updatedAddresses,
-      updatedAt: new Date().toISOString(),
-    });
+    // Use the database instance directly to update custom fields
+    return await dbService.database.updateDocument(
+      dbService.databaseId,
+      dbService.usersCollectionId,
+      userId,
+      {
+        addresses: JSON.stringify(updatedAddresses),
+        updatedAt: new Date().toISOString(),
+      }
+    );
   } catch (error) {
     console.error("Error adding user address:", error);
     throw error;
@@ -22,7 +27,7 @@ export async function addUserAddress(userId, addressData) {
 }
 
 // Get user addresses
-export async function getUserAddresses(userId) {
+export async function getUserAddresses(userId: string) {
   try {
     const user = await dbService.getUserById(userId);
     return DbHelper.parseAddresses(user.addresses);
@@ -33,15 +38,19 @@ export async function getUserAddresses(userId) {
 }
 
 // Add to wishlist
-export async function addToWishlist(userId, productId) {
+export async function addToWishlist(userId: string, productId: string) {
   try {
     const user = await dbService.getUserById(userId);
     const updatedWishlist = DbHelper.addToWishlist(user.wishlist, productId);
-    
-    return await dbService.updateUser(userId, {
-      wishlist: updatedWishlist,
-      updatedAt: new Date().toISOString(),
-    });
+    return await dbService.database.updateDocument(
+      dbService.databaseId,
+      dbService.usersCollectionId,
+      userId,
+      {
+        wishlist: JSON.stringify(updatedWishlist),
+        updatedAt: new Date().toISOString(),
+      }
+    );
   } catch (error) {
     console.error("Error adding to wishlist:", error);
     throw error;
@@ -49,15 +58,22 @@ export async function addToWishlist(userId, productId) {
 }
 
 // Remove from wishlist
-export async function removeFromWishlist(userId, productId) {
+export async function removeFromWishlist(userId: string, productId: string) {
   try {
     const user = await dbService.getUserById(userId);
-    const updatedWishlist = DbHelper.removeFromWishlist(user.wishlist, productId);
-    
-    return await dbService.updateUser(userId, {
-      wishlist: updatedWishlist,
-      updatedAt: new Date().toISOString(),
-    });
+    const updatedWishlist = DbHelper.removeFromWishlist(
+      user.wishlist,
+      productId
+    );
+    return await dbService.database.updateDocument(
+      dbService.databaseId,
+      dbService.usersCollectionId,
+      userId,
+      {
+        wishlist: JSON.stringify(updatedWishlist),
+        updatedAt: new Date().toISOString(),
+      }
+    );
   } catch (error) {
     console.error("Error removing from wishlist:", error);
     throw error;
@@ -65,7 +81,7 @@ export async function removeFromWishlist(userId, productId) {
 }
 
 // Get wishlist
-export async function getWishlist(userId) {
+export async function getWishlist(userId: string) {
   try {
     const user = await dbService.getUserById(userId);
     return DbHelper.parseWishlist(user.wishlist);
@@ -76,15 +92,19 @@ export async function getWishlist(userId) {
 }
 
 // Add order to user history
-export async function addOrderToUser(userId, orderId) {
+export async function addOrderToUser(userId: string, orderId: string) {
   try {
     const user = await dbService.getUserById(userId);
     const updatedOrders = DbHelper.addToOrders(user.orders, orderId);
-    
-    return await dbService.updateUser(userId, {
-      orders: updatedOrders,
-      updatedAt: new Date().toISOString(),
-    });
+    return await dbService.database.updateDocument(
+      dbService.databaseId,
+      dbService.usersCollectionId,
+      userId,
+      {
+        orders: JSON.stringify(updatedOrders),
+        updatedAt: new Date().toISOString(),
+      }
+    );
   } catch (error) {
     console.error("Error adding order to user history:", error);
     throw error;
@@ -92,7 +112,7 @@ export async function addOrderToUser(userId, orderId) {
 }
 
 // Get user order count
-export async function getUserOrderCount(userId) {
+export async function getUserOrderCount(userId: string) {
   try {
     const user = await dbService.getUserById(userId);
     const orders = DbHelper.parseOrders(user.orders);
