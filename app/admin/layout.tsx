@@ -24,6 +24,8 @@ import {
   Megaphone,
 } from "lucide-react";
 import { ThemeProvider } from "@/components/theme-provider";
+import authService from "@/appwrite/authService";
+import dbService from "@/appwrite/database";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -34,11 +36,45 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [checkingAdmin, setCheckingAdmin] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    async function checkAdmin() {
+      try {
+        const user = await authService.getCurrentUser();
+        if (!user) {
+          router.replace("/login");
+          return;
+        }
+        // Fetch user from DB to get the role
+        const dbUser = await dbService.getUserById(user.$id);
+        console.log("dbUser", dbUser);
+        if (!dbUser || dbUser.role !== "admin") {
+          router.replace("/");
+          return;
+        }
+      } catch (error) {
+        router.replace("/login");
+        return;
+      } finally {
+        setCheckingAdmin(false);
+      }
+    }
+    checkAdmin();
+  }, [router]);
+
+  if (checkingAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <span className="text-lg font-semibold"></span>
+      </div>
+    );
+  }
 
   const navItems = [
     { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
