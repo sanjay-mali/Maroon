@@ -97,7 +97,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("cart", JSON.stringify(cart));
     }
   }, [cart, isClient]);
-
   // Add item to cart
   const addToCart = (item: CartItem) => {
     setCart((currentCart) => {
@@ -112,9 +111,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       let newCart;
 
       if (existingItemIndex > -1) {
-        // Item exists, update quantity
+        // Item exists, update quantity (add only the new quantity, not double)
         newCart = [...currentCart];
-        newCart[existingItemIndex].quantity += item.quantity;
+        newCart[existingItemIndex] = {
+          ...newCart[existingItemIndex],
+          quantity: newCart[existingItemIndex].quantity + item.quantity,
+        };
       } else {
         // Item doesn't exist, add it
         newCart = [...currentCart, item];
