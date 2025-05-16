@@ -38,13 +38,33 @@ export default function CheckoutPage() {
   const [showLoginForm, setShowLoginForm] = useState(false);
   const { toast } = useToast();
   const { cart, total, clearCart } = useCart();
-  const { authStatus, setAuthStatus } = useAuth();
+  const { isLoggedIn } = useAuth(); // isLoggedIn is an async function
   const router = useRouter();
 
+  // Add local state for login status
+  const [isLoggedInState, setIsLoggedInState] = useState<boolean | null>(null);
+
+  // Fetch login status on mount
+  useEffect(() => {
+    let mounted = true;
+    async function checkLogin() {
+      try {
+        const loggedIn = await isLoggedIn();
+        if (mounted) setIsLoggedInState(loggedIn);
+      } catch {
+        if (mounted) setIsLoggedInState(false);
+      }
+    }
+    checkLogin();
+    return () => {
+      mounted = false;
+    };
+  }, [isLoggedIn]);
+  console.log("isLoggedIn", isLoggedInState);
   // Fetch user's saved addresses if logged in
   useEffect(() => {
     async function fetchUserAddresses() {
-      if (!authStatus) {
+      if (!isLoggedInState) {
         setIsLoading(false);
         setShowAddressForm(true);
         return;
@@ -53,22 +73,19 @@ export default function CheckoutPage() {
       try {
         const user = await authService.getCurrentUser();
         if (user) {
-          // Use the parse utility to handle string or array types
           const addresses = await dbService.getUserAddresses(user.$id);
           const parsedAddresses = parseAddresses(addresses);
           setSavedAddresses(parsedAddresses);
 
-          // If there are addresses, select the default one
           if (parsedAddresses.length > 0) {
             const defaultAddress =
               parsedAddresses.find((addr) => addr.isDefault) ||
               parsedAddresses[0];
             setSelectedAddressId(defaultAddress.id);
 
-            // Convert to form values format for later use
             setShippingAddress({
               fullName: defaultAddress.fullName,
-              email: user.email, // Use user's email from auth service
+              email: user.email,
               phone: defaultAddress.phone,
               addressLine1: defaultAddress.addressLine1,
               addressLine2: defaultAddress.addressLine2 || "",
@@ -76,14 +93,12 @@ export default function CheckoutPage() {
               state: defaultAddress.state,
               postalCode: defaultAddress.postalCode,
               country: defaultAddress.country,
-              saveAddress: false, // Already saved
+              saveAddress: false,
             });
           } else {
-            // No addresses, show form
             setShowAddressForm(true);
           }
         } else {
-          // Not logged in or user data can't be retrieved
           setShowAddressForm(true);
         }
       } catch (error) {
@@ -94,16 +109,18 @@ export default function CheckoutPage() {
       }
     }
 
-    fetchUserAddresses();
-  }, [authStatus]);
+    if (isLoggedInState !== null) {
+      fetchUserAddresses();
+    }
+  }, [isLoggedInState]);
 
   // If user logs in successfully, move to address step
   useEffect(() => {
-    if (authStatus && step === "choose") {
+    if (isLoggedInState && step === "choose") {
       setStep("address");
       setShowLoginForm(false);
     }
-  }, [authStatus, step]);
+  }, [isLoggedInState, step]);
 
   // Handle saved address selection
   const handleAddressSelect = (addressId: string) => {
@@ -113,10 +130,9 @@ export default function CheckoutPage() {
     );
 
     if (selectedAddress) {
-      // Set shipping address based on selected saved address
       setShippingAddress({
         fullName: selectedAddress.fullName,
-        email: "", // Will be updated with user email before submission
+        email: "",
         phone: selectedAddress.phone,
         addressLine1: selectedAddress.addressLine1,
         addressLine2: selectedAddress.addressLine2 || "",
@@ -124,9 +140,47 @@ export default function CheckoutPage() {
         state: selectedAddress.state,
         postalCode: selectedAddress.postalCode,
         country: selectedAddress.country,
-        saveAddress: false, // Already saved
+        saveAddress: false,
       });
     }
+  };
+
+  // New function to handle "Continue to Payment" click
+  const handleContinueToPayment = async () => {
+    // Only save address for logged-in users
+    if (isLoggedInState && selectedAddressId) {
+      try {
+        const user = await authService.getCurrentUser();
+        // Find the selected address object
+        const selectedAddress = savedAddresses.find(
+          (addr) => addr.id === selectedAddressId
+        );
+        if (user && selectedAddress) {
+          // Save the address to Appwrite user collection
+          await dbService.addUserAddress(user.$id, {
+            fullName: selectedAddress.fullName,
+            addressLine1: selectedAddress.addressLine1,
+            addressLine2: selectedAddress.addressLine2,
+            city: selectedAddress.city,
+            state: selectedAddress.state,
+            postalCode: selectedAddress.postalCode,
+            country: selectedAddress.country,
+            phone: selectedAddress.phone,
+            isDefault: selectedAddress.isDefault || false,
+          });
+        }
+      } catch (error) {
+        console.error("Error saving address for user:", error);
+        toast({
+          title: "Error",
+          description: "Could not save address for your account.",
+          variant: "destructive",
+        });
+        return; // Don't proceed if saving fails
+      }
+    }
+    setStep("payment");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Handle address form submission
@@ -134,12 +188,9 @@ export default function CheckoutPage() {
     try {
       setLoadingAddressSubmit(true);
 
-      // If user is logged in and wants to save the address
-      if (authStatus && values.saveAddress) {
+      if (isLoggedInState && values.saveAddress) {
         const user = await authService.getCurrentUser();
         if (user) {
-          // Use our database service to add the address
-          // The service will handle JSON serialization internally
           await dbService.addUserAddress(user.$id, {
             fullName: values.fullName,
             addressLine1: values.addressLine1,
@@ -149,7 +200,7 @@ export default function CheckoutPage() {
             postalCode: values.postalCode,
             country: values.country,
             phone: values.phone,
-            isDefault: savedAddresses.length === 0, // Make default if first address
+            isDefault: savedAddresses.length === 0,
           });
 
           toast({
@@ -159,11 +210,9 @@ export default function CheckoutPage() {
         }
       }
 
-      // Set the shipping address and proceed to payment
       setShippingAddress(values);
       setStep("payment");
 
-      // Scroll to top when moving to payment
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       console.error("Error saving address:", error);
@@ -191,11 +240,9 @@ export default function CheckoutPage() {
     try {
       setIsLoading(true);
 
-      // Get current user if logged in
-      const user = authStatus ? await authService.getCurrentUser() : null;
+      const user = isLoggedInState ? await authService.getCurrentUser() : null;
       const userId = user ? user.$id : null;
 
-      // Prepare items data - convert to JSON string to avoid nested array issues with Appwrite
       const itemsData = JSON.stringify(
         cart.map((item) => ({
           id: item.id,
@@ -209,7 +256,6 @@ export default function CheckoutPage() {
         }))
       );
 
-      // Convert shipping address to JSON string
       const shippingAddressData = JSON.stringify({
         fullName: shippingAddress.fullName,
         email: shippingAddress.email || (user ? user.email : ""),
@@ -222,7 +268,6 @@ export default function CheckoutPage() {
         country: shippingAddress.country,
       });
 
-      // Convert payment details to JSON string
       const paymentDetailsData = JSON.stringify({
         paymentId: paymentData.razorpay_payment_id,
         orderId: paymentData.razorpay_order_id,
@@ -259,7 +304,6 @@ export default function CheckoutPage() {
       const order = await dbService.createOrder(orderData);
       console.log("order", order);
       if (userId) {
-        // Add order ID to user's orders array using the new userDbService method
         try {
           await addOrderToUser(userId, order.$id);
         } catch (orderErr) {
@@ -443,7 +487,7 @@ export default function CheckoutPage() {
                   {selectedAddressId && (
                     <div className="mt-6">
                       <Button
-                        onClick={() => setStep("payment")}
+                        onClick={handleContinueToPayment}
                         className="w-full"
                       >
                         Continue to Payment
