@@ -7,7 +7,6 @@ export default function NewArrivals() {
   return (
     <div className="space-y-16">
       <div className="space-y-8">
-        <h2 className="text-3xl font-bold text-center">New Arrivals</h2>
         <ProductList filter="new" limit={8} />
         <div className="flex justify-center mt-8">
           <Button asChild variant="outline" className="btn-outline">
