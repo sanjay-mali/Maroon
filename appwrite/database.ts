@@ -10,14 +10,14 @@ export class DBService {
   categoriesCollectionId = "680f5ed400232721c3a9";
   ordersCollectionId = "680f5ef5001ce239d55d";
   usersCollectionId = "680f5ee500152b699ab8";
-  storageId = config.appwriteBucketId;
+  storageId = "680f59ea002f06770208";
   bannersCollectionId = "6819d90000299c92d966";
   announcementsCollectionId = "68233e9700242bd9a521";
 
   constructor() {
     this.client
-      .setEndpoint(config.appwriteUrl)
-      .setProject(config.appwriteProjectId);
+      .setEndpoint("https://nyc.cloud.appwrite.io/v1")
+      .setProject("680f3962002aecf25632");
 
     this.database = new Databases(this.client);
     this.storage = new Storage(this.client);

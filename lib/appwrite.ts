@@ -3,7 +3,9 @@ import { Client, Databases, Storage, Account, Query, ID } from "appwrite";
 
 const client = new Client();
 
-client.setEndpoint(config.appwriteUrl).setProject(config.appwriteProjectId);
+client
+  .setEndpoint("https://nyc.cloud.appwrite.io/v1")
+  .setProject("680f3962002aecf25632");
 
 export const databases = new Databases(client);
 export const storage = new Storage(client);
@@ -18,7 +20,7 @@ export const productsCollectionId = "680f5ebe002589967ce1";
 export const categoriesCollectionId = "680f5ed400232721c3a9";
 export const usersCollectionId = "680f5ee500152b699ab8";
 export const ordersCollectionId = "680f5ef5001ce239d55d";
-export const storageId = config.appwriteBucketId;
+export const storageId = "680f59ea002f06770208";
 
 // Auth Service
 export async function createAccount({
