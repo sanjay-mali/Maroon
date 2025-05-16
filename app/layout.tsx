@@ -24,8 +24,15 @@ export const metadata: Metadata = {
   title: "Maroon - Buy Trendy Western Wear for Women Online",
   description:
     "Shop the latest collection of women's western wear including T-shirts, pants, skirts, and more. Premium quality, trendy designs.",
-  keywords:
-    "women's western wear, women's fashion, tops, dresses, pants, skirts, maroon fashion",
+  keywords: [
+    "women's western wear",
+    "women's fashion",
+    "tops",
+    "dresses",
+    "pants",
+    "skirts",
+    "maroon fashion",
+  ],
   openGraph: {
     title: "Maroon - Buy Trendy Western Wear for Women Online",
     description:
