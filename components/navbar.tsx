@@ -13,12 +13,14 @@ import { useCart } from "@/context/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchSuggestions } from "@/hooks/use-search-suggestions";
 import dbService from "@/appwrite/database";
+import authService from "@/appwrite/authService";
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { toast } = useToast();
   const [categories, setCategories] = useState<any[]>([]);
   const { itemCount, toggleCart } = useCart();
+  const [user, setUser] = useState<any>(null);
   const router =
     typeof window !== "undefined"
       ? require("next/navigation").useRouter()
@@ -27,7 +29,7 @@ export default function Navbar() {
   // Use the search suggestions hook
   const {
     searchResults,
-    loading: searchLoading,
+    loading,
     searchValue,
     setSearchValue,
     debouncedValue,
@@ -55,6 +57,18 @@ export default function Navbar() {
       }
     };
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const currentUser = await authService.getCurrentUser();
+        setUser(currentUser);
+      } catch {
+        setUser(null);
+      }
+    }
+    fetchUser();
   }, []);
 
   return (
@@ -109,13 +123,23 @@ export default function Navbar() {
                       </Link>
                     ))}
                 <div className="border-t my-4 pt-4">
-                  <Link
-                    href="/login"
-                    className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
-                  >
-                    <User className="h-5 w-5" />
-                    Login / Register
-                  </Link>
+                  {user ? (
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
+                    >
+                      <User className="h-5 w-5" />
+                      Profile
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/login"
+                      className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
+                    >
+                      <User className="h-5 w-5" />
+                      Login / Register
+                    </Link>
+                  )}
                 </div>
               </nav>
             </SheetContent>
