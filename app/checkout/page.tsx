@@ -22,9 +22,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { parseAddresses } from "@/lib/addressUtils";
+import { UserLoginForm } from "@/components/user-login-form";
 
 export default function CheckoutPage() {
-  const [step, setStep] = useState<"address" | "payment">("address");
+  const [step, setStep] = useState<"choose" | "address" | "payment">("choose");
   const [isLoading, setIsLoading] = useState(true);
   const [loadingAddressSubmit, setLoadingAddressSubmit] = useState(false);
   const [shippingAddress, setShippingAddress] =
@@ -34,9 +35,10 @@ export default function CheckoutPage() {
     null
   );
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
   const { toast } = useToast();
   const { cart, total, clearCart } = useCart();
-  const { authStatus } = useAuth();
+  const { authStatus, setAuthStatus } = useAuth();
   const router = useRouter();
 
   // Fetch user's saved addresses if logged in
@@ -94,6 +96,14 @@ export default function CheckoutPage() {
 
     fetchUserAddresses();
   }, [authStatus]);
+
+  // If user logs in successfully, move to address step
+  useEffect(() => {
+    if (authStatus && step === "choose") {
+      setStep("address");
+      setShowLoginForm(false);
+    }
+  }, [authStatus, step]);
 
   // Handle saved address selection
   const handleAddressSelect = (addressId: string) => {
@@ -166,6 +176,7 @@ export default function CheckoutPage() {
       setLoadingAddressSubmit(false);
     }
   };
+
   // Handle successful payment
   const handlePaymentSuccess = async (paymentData: any) => {
     if (!shippingAddress) {
@@ -303,6 +314,41 @@ export default function CheckoutPage() {
 
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="lg:w-2/3">
+          {/* Choose Checkout Type Step */}
+          {step === "choose" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="bg-white p-6 rounded-lg shadow-sm"
+            >
+              <h2 className="text-xl font-semibold mb-6">
+                How would you like to checkout?
+              </h2>
+              <div className="flex flex-col md:flex-row gap-4">
+                <Button
+                  className="w-full md:w-auto"
+                  onClick={() => setStep("address")}
+                >
+                  Guest Checkout
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full md:w-auto"
+                  onClick={() => setShowLoginForm(true)}
+                >
+                  Log in
+                </Button>
+              </div>
+              {showLoginForm && (
+                <div className="mt-8">
+                  <h3 className="font-medium mb-4">Log in to your account</h3>
+                  <UserLoginForm />
+                </div>
+              )}
+            </motion.div>
+          )}
+
           {/* Address Step */}
           {step === "address" && (
             <motion.div
