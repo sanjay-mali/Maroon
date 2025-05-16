@@ -23,7 +23,6 @@ export default function OrderDetailsPage() {
   useEffect(() => {
     const fetchOrder = async () => {
       const orderData = await getOrderById(id as string);
-      console.log(orderData)
 
       setOrder(orderData);
     };

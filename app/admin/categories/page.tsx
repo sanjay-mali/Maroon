@@ -112,7 +112,6 @@ export default function CategoriesPage() {
   };
 
   const handleAddCategory = async () => {
-    console.log("newCategory", newCategory);
 
     try {
       if (!newCategory.name.trim()) {

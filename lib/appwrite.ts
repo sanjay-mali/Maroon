@@ -75,7 +75,6 @@ export async function Logout() {
 export async function getCurrentUser() {
   try {
     const user = await account.get();
-    console.log("userrrrrrrrrrrrrrrrrr", user);
     return user;
   } catch (error: any) {
     console.error("Error fetching current user:", error);

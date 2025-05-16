@@ -14,8 +14,6 @@ export default function ProtetedLayout({
   const { authStatus, setAuthStatus } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
 
-  console.log("authStatus", authStatus);
-
   useEffect(() => {
     // Directly check auth status from service to ensure it's current
     const checkAuthStatus = async () => {

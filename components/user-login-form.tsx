@@ -37,7 +37,6 @@ export function UserLoginForm() {
           description: "Failed to log in.",
         });
       }
-      console.log("res", res);
     } catch (error) {
       toast({ title: "Error", description: "Something went wrong." });
     } finally {

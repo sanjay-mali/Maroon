@@ -53,7 +53,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         }
         // Fetch user from DB to get the role
         const dbUser = await dbService.getUserById(user.$id);
-        console.log("dbUser", dbUser);
+
         if (!dbUser || dbUser.role !== "admin") {
           router.replace("/");
           return;

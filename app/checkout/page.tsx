@@ -60,7 +60,6 @@ export default function CheckoutPage() {
       mounted = false;
     };
   }, [isLoggedIn]);
-  console.log("isLoggedIn", isLoggedInState);
   // Fetch user's saved addresses if logged in
   useEffect(() => {
     async function fetchUserAddresses() {
@@ -302,7 +301,7 @@ export default function CheckoutPage() {
       };
 
       const order = await dbService.createOrder(orderData);
-      console.log("order", order);
+
       if (userId) {
         try {
           await addOrderToUser(userId, order.$id);
