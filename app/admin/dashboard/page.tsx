@@ -1,6 +1,5 @@
 import { CreditCard, Package, Users, ShoppingBag, AlertTriangle } from "lucide-react";
 import { getTotalActiveUsers, getTotalOrders, getTotalProducts, getTotalRevenue, getLowStockProducts } from "@/lib/appwrite";
-import { promises } from "dns";
 interface MetricCardProps {
   title: string;
   value: string | number;
